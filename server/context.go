@@ -47,7 +47,7 @@ func (c *ClientContext) DelWs(ws *websocket.Conn) {
 	if idx != -1 {
 		log.Debug("deleting ws for = " + c.UserId)
 		if len(c.wsArr) == 1 {
-			c.wsArr = make([]*websocket.Conn, 1)
+			c.wsArr = []*websocket.Conn{}
 		} else {
 			c.wsArr[idx] = c.wsArr[len(c.wsArr)-1]
 			c.wsArr = c.wsArr[:len(c.wsArr)-1]
