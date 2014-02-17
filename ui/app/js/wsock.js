@@ -2,20 +2,19 @@ angular.module('comm', [])
 .factory('wsock', ['$q', '$rootScope',  function ($q, $rootScope) {
 	var Service = {};
 	var ws;
+	var isWsOpen = false;
 	
-	Service.hello = function () {
-		console.log("hello wsock");
-	};
-
 	Service.connect = function (url) {
 		ws = new WebSocket(url);
 		
 		ws.onopen = function () {
 			console.log("ws conn opened");
+			isWsOpen = true;
 		};
 
 		ws.onclose = function () {
 			console.log("ws conn closed");
+			isWsOpen = false;
 		};
 
 		ws.onmessage = function (msg) {
@@ -32,7 +31,11 @@ angular.module('comm', [])
 
 	Service.send = function (msg) {
 		//check ws
-		ws.send(msg);
+		if (isWsOpen) {
+			ws.send(msg);
+		} else {
+			console.error("[wsock] drop message = " + msg);
+		}
 	};
 
 	Service.connect("ws://localhost:3000/irc/");
