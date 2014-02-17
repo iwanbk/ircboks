@@ -1,0 +1,5 @@
+{
+    "host_port":"0.0.0.0:3000",
+    "mongodb_uri":"mongodb://user:password@ds02XXX.mongolab.com:27419/ircboks",
+    "screet_key":"KJHOYjkdahda87d8atd8ta8dadakldalda"
+}
