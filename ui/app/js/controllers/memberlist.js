@@ -50,6 +50,9 @@ ircboksControllers.controller('MemberListCtrl', ['$scope', '$rootScope', '$route
 	//handle JOIN event
 	$scope.$on("JOIN", function (event, msg) {
 		var channame = msg.args[0];
+		if ($rootScope.membersdict[channame] === undefined) {
+			$rootScope.membersdict[channame] = new Members();
+		}
 		$rootScope.membersdict[channame].addNick(msg.nick);
 		$scope.$apply();
 	});
