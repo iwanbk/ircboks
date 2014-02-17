@@ -13,7 +13,6 @@ ircboksApp.config(['$routeProvider', function ($routeProvider) {
 			controller: 'loginCtrl'
 		}).
 		when('/:activeServer/:activeChan', {
-			templateUrl: 'partials/chat.html',
-			controller: 'mainCtrl'
+			templateUrl: 'partials/chat.html'
 		});
 }]);

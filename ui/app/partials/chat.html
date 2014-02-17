@@ -8,15 +8,15 @@
 }
 </style>
 <div id="chat_box" class="row col-md-12">
-	<div id="leftcol" class="col-md-2 well">
+	<div id="leftcol" class="col-md-2 well" ng-controller="ChanUserListCtrl">
 		<ul>
 			<li ng-repeat="chan in chanlist"><a href="#/{{activeServer}}/{{chan.encName}}">{{chan.name}}</a></li>
 		</ul>
 		<ul>
-			<li ng-repeat="user in otheruserlist track by $index"><a href="#/{{activeServer}}/{{user}}">{{user}}</a></li>
+			<li ng-repeat="user in userlist track by $index"><a href="#/{{activeServer}}/{{user}}">{{user}}</a></li>
 		</ul>
 	</div>
-	<div id="middlecol" class="col-md-8">
+	<div id="middlecol" class="col-md-8" ng-controller="mainCtrl">
 		<div id="chat" style="margin-bottom: 10px;height: 400px;overflow-y: scroll;overflow-x:hidden;" scroll-if>
 			<div data-ng-repeat="m in chattab[activeChan].messages" scroll-item>
 				<div class="row" ng-show="showDate($index, chattab[activeChan].messages)">
@@ -35,9 +35,9 @@
 			</form>
 		</div>
 	</div>
-	<div  id="rightcol" class="col-md-2 well" style="height:400px; overflow-y: scroll;">
+	<div  id="rightcol" class="col-md-2 well" style="height:400px; overflow-y: scroll;" ng-controller="MemberListCtrl">
 		<ul>
-			<li ng-repeat="nick in members[activeChan].names"><a href="#/{{activeServer}}/{{nick}}">{{nick}}</a></li>
+			<li ng-repeat="nick in membersdict[activeChan].names"><a href="#/{{activeServer}}/{{nick}}">{{nick}}</a></li>
 		</ul>
 	</div>
 </div>

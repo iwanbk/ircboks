@@ -166,32 +166,6 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 				$location.path("/");
 			}
 		}
-		//channel list
-		if ($rootScope.chanlist === undefined) {
-			$rootScope.chanlist = [];
-		}
-
-		//channel members
-		if ($rootScope.members === undefined) {
-			$rootScope.members = {};
-		}
-
-		//channnel member for this chan
-		if (isInChannel() && $rootScope.members[$scope.activeChan] === undefined) {
-			$rootScope.members[$scope.activeChan] = new Members($scope.activeChan);
-			askChannelNames($scope.activeChan);
-		}
-
-		//other user list
-		if ($rootScope.otheruserlist === undefined) {
-			$rootScope.otheruserlist = [];
-		}
-
-		//check if this nick already added in otheruserlist
-		if (!isInChannel() && $rootScope.otheruserlist.indexOf($scope.activeChan) == -1) {
-			console.log("add " + $scope.activeChan + " to otheruserlist");
-			$rootScope.otheruserlist.push($scope.activeChan);
-		}
 
 		//chat tab
 		if ($rootScope.chattab === undefined) {
@@ -206,10 +180,6 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 			};
 		}
 
-		//init chanlist
-		if ($rootScope.chanlist.length === 0) {
-			$scope.askDumpInfo();
-		}
 
 		//ask chanlog
 		if (!isFirstChanLogAsked($scope.activeChan)) {
@@ -334,7 +304,6 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 	*/
 	$scope.$on('ircPrivMsg', function (event, msg) {
 		var tabName = "";
-		var isChanMsg = true;
 
 		var msgObj = msg;
 		msgObj.timestamp = msgObj.timestamp * 1000;
@@ -344,7 +313,6 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 			tabName = msg.target;
 		} else {
 			tabName = msg.nick;
-			isChanMsg = false;
 		}
 
 		if ($rootScope.chattab[tabName] === undefined) {
@@ -354,20 +322,9 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 				messages:[]
 			};
 			$rootScope.chattab[tabName] = new_tab;
-			
-			if (isChanMsg) {
-				$rootScope.chanlist.push(tabName);
-			} else {
-				$rootScope.otheruserlist.push(tabName);
-			}
 		}
 		$rootScope.chattab[tabName].messages.push(msgObj);
 		$rootScope.chattab[tabName].needScrollBottom = true;
-		if (tabName == $scope.activeChan) {
-			//$('#chat').scrollTop($('#chat')[0].scrollHeight);
-			//console.log("scroll bottom");
-			$scope.$apply();
-		}
 	});
 
 	$scope.ircJoin = function (channel) {
@@ -389,49 +346,15 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 
 	//handle JOIN event
 	$scope.$on("JOIN", function (event, msg) {
-		if (msg.nick == $rootScope.nick) {
-			$scope.askDumpInfo();
-		}
-		var channame = msg.args[0];
-		$rootScope.members[channame].addNick(msg.nick);
-		$scope.$apply();
 	});
 
 	//handle PART event
 	$scope.$on("PART", function (event, msg) {
 		var channame = msg.args[0];
-		$rootScope.members[channame].delNick(msg.nick);
-		$scope.$apply();
 	});
 
 	//handle QUIT event
 	$scope.$on("QUIT", function (event, msg) {
-		for (var tabname in $rootScope.members) {
-			if (tabname[0] == "#") {
-				$rootScope.members[tabname].delNick(msg.nick);
-			}
-		}
-		$scope.$apply();
-	});
-
-	/**
-	* channelNames message is message that contain list of channel members.
-	* it is 353 and 366 code
-	*/
-	$scope.$on('channelNames', function (event, msg) {
-		//initialize Members object, if still empty
-		//TODO : we need to check if we really need NAMES list of this channel
-		if ($rootScope.members[msg.channel] === undefined) {
-			$rootScope.members[msg.channel] = new Members();
-		}
-
-		//add members
-		$rootScope.members[msg.channel].add(msg.names, msg.end);
-
-		//update view
-		if ($scope.activeChan == msg.channel) {
-			$scope.$apply();
-		}
 	});
 
 
@@ -440,38 +363,15 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 	*/
 	$scope.$on('ircBoxInfo', function (event, msg) {
 		$scope.$apply(function(){
-			$rootScope.chanlist = [];
 			for (var i in msg.chanlist) {
-				var chan = {
-					name: msg.chanlist[i],
-					encName: encodeURIComponent(msg.chanlist[i])
-				};
-				$rootScope.chanlist.push(chan);
-				//ask NAMES if needed
-				if ($rootScope.members[chan.name] === undefined) {
-					askChannelNames(chan.name);
-				}
 				//ask chan log if needed
-				if (!isFirstChanLogAsked(chan.name)) {
-					$scope.askChanLog(chan.name);
+				if (!isFirstChanLogAsked(msg.chanlist[i])) {
+					$scope.askChanLog(msg.chanlist[i]);
 				}
 			}
 		});
 	});
 
-	/**
-	* send NAMES command.
-	*/
-	var askChannelNames = function (channel) {
-		var msg = {
-			event:"ircNames",
-			data: {
-				userId: $rootScope.userId,
-				channel: channel
-			}
-		};
-		wsock.send(JSON.stringify(msg));
-	};
 
 	/**
 	* Check if it is irc PRIVMSG command
