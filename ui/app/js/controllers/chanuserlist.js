@@ -79,9 +79,8 @@ ircboksControllers.controller('ChanUserListCtrl', ['$scope', '$rootScope', '$rou
 	* PRIVMSG handler
 	*/
 	$scope.$on('ircPrivMsg', function (event, msg) {
-		if (msg.target[0] == "#") {
-			tabName = msg.nick;
-			isChanMsg = false;
+		//add user to userlist if it is message to us
+		if (msg.target[0] != "#") {
 			if ($rootScope.userlist.indexOf(msg.nick) == -1) {
 				$rootScope.userlist.push(msg.nick);
 				$scope.$apply();
