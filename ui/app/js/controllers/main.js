@@ -27,6 +27,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 			} else {
 				$location.path("/");
 			}
+			return;
 		}
 
 		//chat tab
