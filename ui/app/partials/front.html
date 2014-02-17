@@ -1,0 +1,91 @@
+<div class="row center-block">
+	<h1>IRCBoks</h1>
+</div>
+<div class="row" ng-hide="isLogin">
+	<h3>Login</h3>
+	<div class="row">
+		<div class="col-sm-4 alert {{loginMsgClass}}">{{loginMsg}}</div>
+	</div>
+	<form role="form" class="form-inline" ng-submit="login()">
+		<div class="form-group">
+			<label class="sr-only" for="email">Email address</label>
+			<input type="email" class="form-control" id="email" placeholder="Enter email"  ng-model="userId" required>
+		</div>
+		<div class="form-group">
+			<label class="sr-only" for="password">Password</label>
+			<input type="password" class="form-control" id="password" placeholder="Enter Password"  ng-model="userPassword" required>
+		</div>
+		<button type="submit" class="btn btn-default">Login</button>
+	</form>
+
+	<h3>Register </h3>
+	<div class="row">
+		<div class="col-sm-offset-2 col-sm-6 alert {{registrationClass}} alert-dismissable">{{registrationMsg}}</div>
+	</div>
+	<form role="form" class="form-horizontal" ng-submit="register()" ng-hide="registrationSent">
+		<div class="form-group">
+			<label  class="col-sm-2 control-label" for="email">Email address</label>
+			<div class="col-sm-4">
+				<input type="email" class="form-control" id="email" placeholder="Enter email"  ng-model="newUserId" required>
+			</div>
+		</div>
+		<div class="form-group">
+			<label  class="col-sm-2 control-label" for="password1">Password</label>
+			<div class="col-sm-4">
+				<input type="password" class="form-control" id="password1" placeholder="Enter Password"  ng-model="newUserPassword1" required ngMinlength="4">
+			</div>
+		</div>
+		<div class="form-group">
+			<label  class="col-sm-2 control-label" for="password2">Password(again)</label>
+			<div class="col-sm-4">
+				<input type="password" class="form-control" id="password" placeholder="Verify Password"  ng-model="newUserPassword2" required ngMinlength="4">
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-offset-2 col-sm-4">
+				<button type="submit" class="btn btn-default">Register</button>
+			</div>
+		</div>
+	</form>
+</div>
+
+<div class="row" ng-show="isNeedStart">
+	<h3>Initialize Your IRC Client</h3>
+	<form role="form" class="form-horizontal" ng-submit="start()">
+		<div class="form-group">
+			<label  class="col-sm-2 control-label" for="nick">Nick</label>
+			<div class="col-sm-4">
+				<input type="text" class="form-control" id="nick" ng-model="nick" placeholder="Nick" required></input>
+			</div>
+		</div>
+		<div class="form-group">
+			<label  class="col-sm-2 control-label" for="ircPassword">Password (if any)</label>
+			<div class="col-sm-4">
+				<input type="password" class="form-control" id="ircPassword" ng-model="ircPassword" placeholder="Password"></input>
+			</div>
+		</div>
+		<div class="form-group">
+			<label  class="col-sm-2 control-label" for="user">User</label>
+			<div class="col-sm-4">
+				<input type="text" class="form-control" id="user" ng-model="user" placeholder="User" required></input>
+			</div>
+		</div>
+		<div class="form-group">
+			<label  class="col-sm-2 control-label" for="channel">Channel to Join</label>
+			<div class="col-sm-4">
+				<input type="text" class="form-control" id="channel" ng-model="channel" placeholder="Channel to Join" required></input>
+			</div>
+		</div>
+		<div class="form-group">
+			<label  class="col-sm-2 control-label" for="server">Server</label>
+			<div class="col-sm-4">
+				<input type="text" class="form-control" id="server" ng-model="server" placeholder="IRC Server" required></input>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-offset-2 col-sm-4">
+				<button type="submit" class="btn btn-default">Start</button>
+			</div>
+		</div>
+	</form>
+</div>
