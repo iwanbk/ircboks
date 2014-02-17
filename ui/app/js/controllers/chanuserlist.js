@@ -5,6 +5,9 @@ ircboksControllers.controller('ChanUserListCtrl', ['$scope', '$rootScope', '$rou
 	$scope.activeChan = $routeParams.activeChan;
 
 	var init = function () {
+		if (!$rootScope.isLogin) {
+			return;
+		}
 		if ($rootScope.chanlist === undefined) {
 			$scope.askDumpInfo();
 			$rootScope.chanlist = [];

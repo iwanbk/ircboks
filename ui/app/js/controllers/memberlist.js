@@ -5,6 +5,9 @@ ircboksControllers.controller('MemberListCtrl', ['$scope', '$rootScope', '$route
 	$scope.activeChan = $routeParams.activeChan;
 
 	var init = function () {
+		if (!$rootScope.isLogin) {
+			return;
+		}
 		if ($rootScope.membersdict === undefined) {
 			$rootScope.membersdict = {};
 		}
