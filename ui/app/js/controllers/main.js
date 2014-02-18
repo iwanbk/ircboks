@@ -86,13 +86,12 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 	};
 
 	//send PRIVMSG
-	$scope.sendMsg = function (message) {
-		console.log("sending message..." + message);
+	$scope.sendPrivMsg = function (target, message) {
 		var msg = {
 			event: 'ircPrivMsg',
 			data: {
 				userId: $rootScope.userId,
-				target: $scope.activeChan,
+				target: target,
 				message: message
 			}
 		};
@@ -229,17 +228,30 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 			case "join":
 				$scope.ircJoin(cmdArr[1]);
 				break;
+			case "msg":
+				sendMsg(command);
+				break;
 			default:
 				alert("unsupported command : " + cmdArr[0]);
 		}
 	};
+	function sendMsg(command) {
+		var cmdArr = command.split(" ");
+		if (cmdArr.length < 3) {
+			return;
+		}
+		//message position
+		var pos = command.indexOf(cmdArr[2]);
+		msg =  $.trim(command.substr(pos));
+		$scope.sendPrivMsg(cmdArr[1], msg);
+	}
 
 	/**
 	* Send irc command
 	*/
 	$scope.sendCommand = function () {
 		if (isIrcPrivMsg($scope.ircCommand)) {
-			$scope.sendMsg($scope.ircCommand);
+			$scope.sendPrivMsg($scope.activeChan, $scope.ircCommand);
 		} else {
 			$scope.dispatchCommand($scope.ircCommand.substr(1));
 		}
