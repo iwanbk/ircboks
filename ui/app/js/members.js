@@ -19,12 +19,13 @@
 			}
 			var namesArr = strList.split(" ");
 			for (var i in namesArr) {
-				if (this.names.indexOf(namesArr[i]) == -1) {
-					this.names.push(namesArr[i]);
-				}
+				this.addNick(namesArr[i]);
 			}
 		};
 		members.prototype.addNick = function (nick) {
+			if (nick[0] == "@") {
+				nick = nick.substr(1);
+			}
 			if (this.names.indexOf(nick) < 0) {
 				this.names.push(nick);
 			}
