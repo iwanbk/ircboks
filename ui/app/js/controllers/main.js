@@ -4,18 +4,6 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 	$scope.activeServer = $routeParams.activeServer;
 	$scope.activeChan = $routeParams.activeChan;
 
-	/**
-	* ask ircboks client to dump all info about the client
-	*/
-	$scope.askDumpInfo = function () {
-		var msg = {
-			event: 'ircBoxInfo',
-			data: {
-				userId: $rootScope.userId
-			}
-		};
-		wsock.send(JSON.stringify(msg));
-	};
 
 	var initController = function () {
 		//check if we already login
@@ -131,13 +119,8 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		}
 		for (i = 0; i <  msg.logs.length; i++) {
 			var obj = msg.logs[i];
-			var log = {
-				message: obj.Message,
-				timestamp: obj.Timestamp * 1000,
-				nick: obj.Nick,
-				target: obj.Target
-			};
-			$rootScope.chattab[log.nick].messages.unshift(log);
+			var message = new Message(obj.Message, obj.Timestamp, obj.Nick, obj.Target, "PRIVMSG");
+			$rootScope.chattab[log.nick].messages.unshift(message);
 		}
 		$scope.$apply();
 	});
@@ -150,13 +133,8 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		}
 		for (i = 0; i <  msg.logs.length; i++) {
 			var obj = msg.logs[i];
-			var log = {
-				message: obj.Message,
-				timestamp: obj.Timestamp * 1000,
-				nick: obj.Nick,
-				target: obj.Target
-			};
-			$rootScope.chattab[msg.channel].messages.unshift(log);
+			var message = new Message(obj.Message, obj.Timestamp, obj.Nick, obj.Target, "PRIVMSG");
+			$rootScope.chattab[msg.channel].messages.unshift(message);
 		}
 		$scope.$apply();
 	});
@@ -168,8 +146,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 	$scope.$on('ircPrivMsg', function (event, msg) {
 		var tabName = "";
 
-		var msgObj = msg;
-		msgObj.timestamp = msgObj.timestamp * 1000;
+		var msgObj = new Message(msg.message, msg.timestamp, msg.nick, msg.target, "PRIVMSG");
 
 		//update chattab & chanlist/otheruserlist
 		if (msg.target[0] == "#") {
