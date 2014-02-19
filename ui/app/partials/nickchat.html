@@ -1,0 +1,15 @@
+<style type="text/css">
+.font-size-micro {
+	font-size: 0.7em;
+	font-color:gray;
+}
+.font-size-small {
+	font-size: 0.8em;
+}
+</style>
+<div id="chat_box" class="row col-md-12">
+	<div id="leftcol" class="col-md-2 well" ng-controller="targetListCtrl" ng-include="'partials/targetlist.html'">
+	</div>
+	<div id="middlecol" class="col-md-10" ng-controller="mainCtrl" ng-include="'partials/mainchat.html'">
+	</div>
+</div>

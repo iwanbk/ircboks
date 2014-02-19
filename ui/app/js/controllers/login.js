@@ -113,7 +113,7 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 
 	//go to chat page
 	$scope.toChatPage = function () {
-		var page = "/" + Session.server + "/" + $rootScope.channel;
+		var page = "/" + Session.server + "/c/" + $rootScope.channel;
 		console.log("redirect to :" + page);
 		$location.path(page);
 	};
