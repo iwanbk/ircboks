@@ -164,6 +164,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		}
 		$rootScope.chattab[tabName].messages.push(msgObj);
 		$rootScope.chattab[tabName].needScrollBottom = true;
+		$scope.$apply();
 	});
 
 	$scope.ircJoin = function (channel) {
