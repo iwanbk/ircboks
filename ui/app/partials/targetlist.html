@@ -1,0 +1,6 @@
+<ul>
+	<li ng-repeat="chan in chanlist"><a href="#/{{activeServer}}/{{chan.encName}}">{{chan.name}}</a></li>
+</ul>
+<ul>
+	<li ng-repeat="user in userlist track by $index"><a href="#/{{activeServer}}/{{user}}">{{user}}</a></li>
+</ul>

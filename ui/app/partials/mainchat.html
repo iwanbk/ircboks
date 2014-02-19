@@ -1,0 +1,17 @@
+<div id="chat" style="margin-bottom: 10px;height: 400px;overflow-y: scroll;overflow-x:hidden;" scroll-if>
+	<div data-ng-repeat="m in chattab[activeChan].messages" scroll-item>
+		<div class="row" ng-show="showDate($index, chattab[activeChan].messages)">
+			<div class="col-md-10 info" style="text-align:center;">{{m.timestamp | date:'MMMM dd'}}</div>
+		</div>
+		<div class="row">
+			<div class="col-md-1 font-size-micro">{{m.timestamp | date:'h:mma'}}</div>
+			<div class="col-md-9"><strong>{{m.nick}}</strong> {{m.message}}</div>
+		</div>
+	</div>
+</div>
+<div class="well">
+	<form ng-submit="sendCommand()">
+		<input type="text" class="col-md-10" ng-model="ircCommand" placeholder="Type your message here" required/>
+		<input type="submit" value="Send" />
+	</form>
+</div>
