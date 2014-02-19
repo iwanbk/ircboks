@@ -1,4 +1,4 @@
-ircboksControllers.controller('ChanUserListCtrl', ['$scope', '$rootScope', '$routeParams',  '$location', 'wsock', 'Session', 
+ircboksControllers.controller('targetListCtrl', ['$scope', '$rootScope', '$routeParams',  '$location', 'wsock', 'Session', 
 	function ($scope, $rootScope, $routeParams, $location, wsock, Session) {
 
 	$scope.activeServer = $routeParams.activeServer;

@@ -15,6 +15,8 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 	$scope.loginMsgClass = "alert-info";
 	$scope.registrationMsg = "";
 
+	$scope.isNeedStart = false;
+
 	//login to ircboks
 	$scope.login = function () {
 		var msg = {
@@ -75,14 +77,13 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 		if (msg.result === false) {
 			$scope.loginMsgClass = "alert-danger";
 			$scope.loginMsg = "Login failed : please check your username & password";
-			$scope.$apply();
 			console.error("Login failed");
 		} else {
 			Session.userId = $scope.userId;
 			$scope.loginMsgClass = "alert-success";
 			$scope.loginMsg = "Login succeed. Initializing your ircboks";
-			$scope.$apply();
 			Session.isLogin = true;
+			$scope.isLogin = true;
 			if (msg.ircClientExist === true) {
 				Session.nick = msg.nick;
 				Session.user = msg.user;
@@ -92,11 +93,11 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 
 				$scope.toChatPage();
 			} else {
-				$scope.$apply(function(){ 
-					Session.isNeedStart = true;
-				});
+				Session.isNeedStart = true;
+				$scope.isNeedStart = true;
 			}
 		}
+		$scope.$apply();
 	});
 
 	$scope.$on("registrationResult", function (event, msg) {
@@ -114,9 +115,7 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 	$scope.toChatPage = function () {
 		var page = "/" + Session.server + "/" + $rootScope.channel;
 		console.log("redirect to :" + page);
-		$scope.$apply(function(){
-			$location.path(page); 
-		});
+		$location.path(page); 
 	};
 
 	$scope.$on('clientStartResult', function (event, msg) {
