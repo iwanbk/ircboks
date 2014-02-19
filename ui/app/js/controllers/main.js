@@ -7,7 +7,6 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		$scope.activeChan = $scope.activeServer;
 	}
 
-
 	var initController = function () {
 		//check if we already login
 		if (Session.isLogin === false) {//check if we already login
@@ -108,8 +107,8 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 			target: msg.data.target
 		};
 
-		$rootScope.chattab[$scope.activeChan].messages.push(log);
-		$rootScope.chattab[$scope.activeChan].needScrollBottom = true;
+		$rootScope.chattab[target].messages.push(log);
+		$rootScope.chattab[target].needScrollBottom = true;
 	};
 
 	/**
@@ -274,8 +273,9 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 	};
 
 	$scope.$on("$routeChangeStart", function (event, next, current) {
-		//$rootScope.chattab[$scope.activeChan].lastScrollPos = $('#chat').scrollTop();
+		$rootScope.chattab[$scope.activeChan].lastScrollPos = $('#chat').scrollTop();
 	});
+
 	initController();
 
 	var addToStatusPage = function (msg, eventType) {
