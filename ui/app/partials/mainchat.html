@@ -1,3 +1,4 @@
+<div  ng-controller="mainCtrl" >
 <div id="chat" style="margin-bottom: 10px;height: 400px;overflow-y: scroll;overflow-x:hidden;" scroll-if>
 	<div data-ng-repeat="m in chattab[activeChan].messages" scroll-item>
 		<div class="row" ng-show="showDate($index, chattab[activeChan].messages)">
@@ -14,4 +15,5 @@
 		<input type="text" class="col-md-10" ng-model="ircCommand" placeholder="Type your message here" required/>
 		<input type="submit" value="Send" />
 	</form>
+</div>
 </div>
