@@ -61,7 +61,7 @@ ircboksControllers.controller('ChanUserListCtrl', ['$scope', '$rootScope', '$rou
 			$scope.askDumpInfo();
 		}
 
-		if ($scope.activeChan[0] == "#") {
+		if ($scope.activeChan[0] != "#") {
 			Session.addTarget($scope.activeChan);
 		}
 	});
