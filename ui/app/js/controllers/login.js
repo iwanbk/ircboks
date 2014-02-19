@@ -115,7 +115,7 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 	$scope.toChatPage = function () {
 		var page = "/" + Session.server + "/" + $rootScope.channel;
 		console.log("redirect to :" + page);
-		$location.path(page); 
+		$location.path(page);
 	};
 
 	$scope.$on('clientStartResult', function (event, msg) {
@@ -126,6 +126,7 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 		} else {
 			console.error("unhandled event = clientStartResult false");
 		}
+		$scope.$apply();
 	});
 }]);
 
