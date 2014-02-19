@@ -1,35 +1,8 @@
-ircboksControllers.controller('ChanUserListCtrl', ['$scope', '$rootScope', '$routeParams',  '$location', 'wsock', 
-	function ($scope, $rootScope, $routeParams, $location, wsock) {
+ircboksControllers.controller('ChanUserListCtrl', ['$scope', '$rootScope', '$routeParams',  '$location', 'wsock', 'Session', 
+	function ($scope, $rootScope, $routeParams, $location, wsock, Session) {
 
 	$scope.activeServer = $routeParams.activeServer;
 	$scope.activeChan = $routeParams.activeChan;
-
-	var init = function () {
-		if (!$rootScope.isLogin) {
-			return;
-		}
-		if ($rootScope.chanlist === undefined) {
-			$scope.askDumpInfo();
-			$rootScope.chanlist = [];
-		}
-		if ($rootScope.userlist === undefined) {
-			$rootScope.userlist = [];	
-		}
-		//check if this user already added to the list
-		if ($scope.activeChan[0] != "#") {
-			if ($rootScope.userlist.indexOf($scope.activeChan) == -1) {
-				$rootScope.userlist.push($scope.activeChan);
-			}
-		}
-	};
-	
-
-	$scope.$on('loginResult', function (event, msg) {
-		if (msg.result === true) {
-			$scope.askDumpInfo();
-			console.log("askDumpInfo");
-		}
-	});
 
 	/**
 	* ask ircboks client to dump all info about the client
@@ -63,16 +36,7 @@ ircboksControllers.controller('ChanUserListCtrl', ['$scope', '$rootScope', '$rou
 	* ircBoxInfo contain all global info about this user.
 	*/
 	$scope.$on('ircBoxInfo', function (event, msg) {
-		$scope.$apply(function(){
-			$rootScope.chanlist = [];
-			for (var i in msg.chanlist) {
-				var chan = {
-					name: msg.chanlist[i],
-					encName: encodeURIComponent(msg.chanlist[i])
-				};
-				$rootScope.chanlist.push(chan);
-			}
-		});
+		Session.setTargetChannels(msg.chanlist);
 	});
 
 	/**
@@ -81,11 +45,24 @@ ircboksControllers.controller('ChanUserListCtrl', ['$scope', '$rootScope', '$rou
 	$scope.$on('ircPrivMsg', function (event, msg) {
 		//add user to userlist if it is message to us
 		if (msg.target[0] != "#") {
-			if ($rootScope.userlist.indexOf(msg.nick) == -1) {
-				$rootScope.userlist.push(msg.nick);
-				$scope.$apply();
-			}
+			Session.addTarget(msg.nick);
+		} else {
+			Session.addTarget(msg.target);
+		}
+		$scope.$apply();
+	});
+
+	$scope.$on("$routeChangeSuccess", function (event, next, current) {
+		$scope.chanlist = Session.targetChannels;
+		$scope.userlist = Session.targetNicks;
+
+		if ($scope.chanlist.length == 0) {
+			$scope.askDumpInfo();
+		}
+
+		if ($scope.activeChan[0] == "#") {
+			Session.addTarget($scope.activeChan);
 		}
 	});
-	init();
+
 }]);
