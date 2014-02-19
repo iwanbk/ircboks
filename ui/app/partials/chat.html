@@ -37,7 +37,7 @@
 	</div>
 	<div  id="rightcol" class="col-md-2 well" style="height:400px; overflow-y: scroll;" ng-controller="MemberListCtrl">
 		<ul>
-			<li ng-repeat="nick in membersdict[activeChan].names"><a href="#/{{activeServer}}/{{nick}}">{{nick}}</a></li>
+			<li ng-repeat="nick in members.names"><a href="#/{{activeServer}}/{{nick}}">{{nick}}</a></li>
 		</ul>
 	</div>
 </div>

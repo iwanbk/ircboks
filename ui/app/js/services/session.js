@@ -1,8 +1,45 @@
 angular.module('session', [])
 .factory('Session', ['$q', '$rootScope',  function ($q, $rootScope) {
 	var Service = {
-		targetChannels:[],
-		targetNicks:[]
+		memberdict: {}, //dictionary of channel members
+		targetChannels:[],//target channels array
+		targetNicks:[] //target nicks array
+	};
+
+	Service.initMember = function (channel) {
+		if (this.memberdict[channel] === undefined) {
+			this.memberdict[channel] = new Members(channel);
+		}
+	};
+	//addMember add nick as a member of a channel
+	Service.addMember = function (nick, channel) {
+		if (this.memberdict[channel] === undefined) {
+			this.memberdict[channel] = new Members(channel);
+		}
+		this.memberdict[channel].addNick(nick);
+	};
+
+	//delMember del nick from a channel
+	Service.delMember = function (nick, channel) {
+		if (this.memberdict[channel] !== undefined) {
+			this.memberdict[channel].delNick(nick);
+		}
+	};
+
+	Service.delMemberFromAll = function (nick) {
+		for (var channel in this.memberdict) {
+			if (channel[0] != "#") {
+				return;
+			}
+			this.delMember(nick, channel);
+		}
+	};
+
+	Service.addMemberArr = function (nickArr, channel) {
+		if (this.memberdict[channel] === undefined) {
+			this.memberdict[channel] = new Members(channel);
+		}
+		this.memberdict[channel].add(nickArr, false);
 	};
 
 	//check if a channel already in target list
