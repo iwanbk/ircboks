@@ -37,6 +37,7 @@ ircboksControllers.controller('ChanUserListCtrl', ['$scope', '$rootScope', '$rou
 	*/
 	$scope.$on('ircBoxInfo', function (event, msg) {
 		Session.setTargetChannels(msg.chanlist);
+		$scope.chanlist = Session.targetChannels;
 	});
 
 	/**
@@ -56,7 +57,7 @@ ircboksControllers.controller('ChanUserListCtrl', ['$scope', '$rootScope', '$rou
 		$scope.chanlist = Session.targetChannels;
 		$scope.userlist = Session.targetNicks;
 
-		if ($scope.chanlist.length == 0) {
+		if ($scope.chanlist.length === 0) {
 			$scope.askDumpInfo();
 		}
 

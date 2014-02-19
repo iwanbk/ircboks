@@ -119,7 +119,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		for (i = 0; i <  msg.logs.length; i++) {
 			var obj = msg.logs[i];
 			var message = new Message(obj.Message, obj.Timestamp, obj.Nick, obj.Target, "PRIVMSG");
-			$rootScope.chattab[log.nick].messages.unshift(message);
+			$rootScope.chattab[message.nick].messages.unshift(message);
 		}
 		$scope.$apply();
 	});
