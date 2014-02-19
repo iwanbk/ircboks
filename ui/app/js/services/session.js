@@ -1,6 +1,14 @@
 angular.module('session', [])
 .factory('Session', ['$q', '$rootScope',  function ($q, $rootScope) {
 	var Service = {
+		userId: null,
+		nick: null,
+		ircUser: null,
+		server: null,
+		//state
+		isLogin: false,
+		isReady: false,
+		isNeedStart: false,
 		memberdict: {}, //dictionary of channel members
 		targetChannels:[],//target channels array
 		targetNicks:[] //target nicks array

@@ -22,7 +22,7 @@ ircboksControllers.controller('MemberListCtrl', ['$scope', '$rootScope', '$route
 		var msg = {
 			event:"ircNames",
 			data: {
-				userId: $rootScope.userId,
+				userId: Session.userId,
 				channel: channel
 			}
 		};

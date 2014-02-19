@@ -11,7 +11,7 @@ ircboksControllers.controller('ChanUserListCtrl', ['$scope', '$rootScope', '$rou
 		var msg = {
 			event: 'ircBoxInfo',
 			data: {
-				userId: $rootScope.userId
+				userId: Session.userId
 			}
 		};
 		wsock.send(JSON.stringify(msg));
@@ -19,14 +19,14 @@ ircboksControllers.controller('ChanUserListCtrl', ['$scope', '$rootScope', '$rou
 
 	//handle JOIN event
 	$scope.$on("JOIN", function (event, msg) {
-		if (msg.nick == $rootScope.nick) {
+		if (msg.nick == Session.nick) {
 			$scope.askDumpInfo();
 		}
 	});
 
 	//handle PART event
 	$scope.$on("PART", function (event, msg) {
-		if (msg.nick == $rootScope.nick) {
+		if (msg.nick == Session.nick) {
 			$scope.askDumpInfo();
 		}
 	});

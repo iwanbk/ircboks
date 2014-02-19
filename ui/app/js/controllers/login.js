@@ -1,5 +1,5 @@
-ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParams',  '$location', 'wsock', 
-	function ($scope, $rootScope, $routeParams, $location, wsock) {
+ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParams',  '$location', 'wsock', 'Session',
+	function ($scope, $rootScope, $routeParams, $location, wsock, Session) {
 
 	//user details, just for convenience while in early test
 	$scope.userId = "paijo@gmail.com";
@@ -10,11 +10,6 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 	$scope.user = "paijon";
 	$scope.channel = "#ircboks";
 	$scope.server = "irc.freenode.net:6667";
-
-	//states
-	$rootScope.isLogin = false;
-	$rootScope.isNeedStart = false;
-	$rootScope.isReady = false;
 
 	$scope.loginMsg = "Please Login";
 	$scope.loginMsgClass = "alert-info";
@@ -29,7 +24,7 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 				'password': $scope.userPassword
 			}
 		};
-		$rootScope.userId = $scope.userId;
+		Session.userId = $scope.userId;
 		wsock.send(JSON.stringify(msg));
 		$scope.loginMsg = "Logging in....";
 	};
@@ -58,7 +53,7 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 		var msg = {
 			'event': 'clientStart',
 			'data': {
-				userId: $rootScope.userId,
+				userId: Session.userId,
 				nick: $scope.nick,
 				user: $scope.user,
 				channel: $scope.channel,
@@ -66,11 +61,12 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 				password: $scope.ircPassword
 			}
 		};
-		$rootScope.userId = $scope.userId;
-		$rootScope.nick = $scope.nick;
-		$rootScope.user = $scope.user;
 		$rootScope.channel = $scope.channel;
-		$rootScope.server = $scope.server;
+
+		Session.nick = $scope.nick;
+		Session.user = $scope.user;
+		$rootScope.channel = $scope.channel;
+		Session.server = $scope.server;
 
 		wsock.send(JSON.stringify(msg));
 	};
@@ -82,21 +78,22 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 			$scope.$apply();
 			console.error("Login failed");
 		} else {
+			Session.userId = $scope.userId;
 			$scope.loginMsgClass = "alert-success";
 			$scope.loginMsg = "Login succeed. Initializing your ircboks";
 			$scope.$apply();
-			$rootScope.isLogin = true;
+			Session.isLogin = true;
 			if (msg.ircClientExist === true) {
-				$rootScope.nick = msg.nick;
-				$rootScope.user = msg.user;
-				$rootScope.server = msg.server;
+				Session.nick = msg.nick;
+				Session.user = msg.user;
+				Session.server = msg.server;
 
-				$rootScope.isReady = true; 
+				Session.isReady = true; 
 
 				$scope.toChatPage();
 			} else {
 				$scope.$apply(function(){ 
-					$scope.isNeedStart = true;
+					Session.isNeedStart = true;
 				});
 			}
 		}
@@ -115,7 +112,7 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 
 	//go to chat page
 	$scope.toChatPage = function () {
-		var page = "/" + $rootScope.server + "/" + $rootScope.channel;
+		var page = "/" + Session.server + "/" + $rootScope.channel;
 		console.log("redirect to :" + page);
 		$scope.$apply(function(){
 			$location.path(page); 
@@ -124,8 +121,8 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 
 	$scope.$on('clientStartResult', function (event, msg) {
 		if (msg.result == "true") {
-			$rootScope.isNeedStart = false;
-			$rootScope.isReady = true;
+			Session.isNeedStart = false;
+			Session.isReady = true;
 			$scope.toChatPage();
 		} else {
 			console.error("unhandled event = clientStartResult false");

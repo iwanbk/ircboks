@@ -1,5 +1,5 @@
-ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams',  '$location', 'wsock', 
-	function ($scope, $rootScope, $routeParams, $location, wsock) {
+ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams',  '$location', 'wsock', 'Session',
+	function ($scope, $rootScope, $routeParams, $location, wsock,Session) {
 
 	$scope.activeServer = $routeParams.activeServer;
 	$scope.activeChan = $routeParams.activeChan;
@@ -7,7 +7,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 
 	var initController = function () {
 		//check if we already login
-		if ($rootScope.isLogin === undefined || $rootScope.isLogin === false) {//check if we already login
+		if (Session.isLogin === false) {//check if we already login
 			if(!$scope.$$phase) {
 				$scope.$apply(function(){
 					$location.path("/");
@@ -56,9 +56,9 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		var msg = {
 			event: 'msghistNickReq',
 			data: {
-				userId: $rootScope.userId,
+				userId: Session.userId,
 				sender: nick,
-				target: $rootScope.nick
+				target: Session.nick
 			}
 		};
 		wsock.send(JSON.stringify(msg));
@@ -78,7 +78,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		var msg = {
 			event: 'msghistChannel',
 			data: {
-				userId: $rootScope.userId,
+				userId: Session.userId,
 				channel:channame
 			}
 		};
@@ -90,7 +90,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		var msg = {
 			event: 'ircPrivMsg',
 			data: {
-				userId: $rootScope.userId,
+				userId: Session.userId,
 				target: target,
 				message: message
 			}
@@ -101,7 +101,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		var log = {
 			message: msg.data.message,
 			timestamp: timestamp,
-			nick: $rootScope.nick,
+			nick: Session.nick,
 			target: msg.data.target
 		};
 
@@ -171,7 +171,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		var msg = {
 			event: 'ircJoin',
 			data: {
-				userId: $rootScope.userId,
+				userId: Session.userId,
 				channel: channel
 			}
 		};
@@ -277,7 +277,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 	};
 
 	$scope.$on("$routeChangeStart", function (event, next, current) {
-		$rootScope.chattab[$scope.activeChan].lastScrollPos = $('#chat').scrollTop();
+		//$rootScope.chattab[$scope.activeChan].lastScrollPos = $('#chat').scrollTop();
 	});
 	initController();
 
