@@ -14,6 +14,13 @@
 			this.unreadCount = 0;
 			//messages array
 			this.messages = [];
+
+			//true if history of this channel already asked
+			this.histAsked = false;
+
+			//true if there is new message and need to scroll down the scrollbar 
+			this.needScrollBottom = false;
+
 		}
 
 		/**
@@ -24,9 +31,13 @@
 			return (this.target[0] === "#");
 		};
 
-		chathist.prototype.addMsg = function (msg) {
+		chathist.prototype.appendMsg = function (msg) {
 			this.messages.push(msg);
 		};
+
+		chathist.prototype.prependMsg = function (msg) {
+			this.messages.unshift(msg);
+		};		
 
 		return chathist;
 	})();

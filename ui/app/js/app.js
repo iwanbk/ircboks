@@ -12,10 +12,13 @@ ircboksApp.config(['$routeProvider', function ($routeProvider) {
 			templateUrl: 'partials/front.html',
 			controller: 'loginCtrl'
 		}).
-		when('/:activeServer/c/:activeChan', {
+		when('/:activeServer', {//server status page
+			templateUrl: 'partials/nickchat.html'
+		}).
+		when('/:activeServer/c/:activeChan', {//channel chat page
 			templateUrl: 'partials/chat.html'
 		}).
-		when('/:activeServer/:activeChan', {
+		when('/:activeServer/:activeChan', {//nick chat page
 			templateUrl: 'partials/nickchat.html'
 		});
 }]);

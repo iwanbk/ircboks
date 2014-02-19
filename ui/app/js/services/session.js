@@ -5,10 +5,13 @@ angular.module('session', [])
 		nick: null,
 		ircUser: null,
 		server: null,
+
 		//state
 		isLogin: false,
 		isReady: false,
 		isNeedStart: false,
+
+		chathist: {}, //chat history
 		memberdict: {}, //dictionary of channel members
 		targetChannels:[],//target channels array
 		targetNicks:[] //target nicks array

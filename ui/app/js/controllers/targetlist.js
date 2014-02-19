@@ -3,6 +3,9 @@ ircboksControllers.controller('targetListCtrl', ['$scope', '$rootScope', '$route
 
 	$scope.activeServer = $routeParams.activeServer;
 	$scope.activeChan = $routeParams.activeChan;
+	if ($scope.activeChan === undefined) {//temporary hack for our status page
+		$scope.activeChan = $scope.activeServer;
+	}
 
 	/**
 	* ask ircboks client to dump all info about the client
@@ -61,7 +64,7 @@ ircboksControllers.controller('targetListCtrl', ['$scope', '$rootScope', '$route
 			$scope.askDumpInfo();
 		}
 
-		if ($scope.activeChan[0] != "#") {
+		if ($scope.activeChan[0] != "#" && $scope.activeChan != $scope.activeServer) {
 			Session.addTarget($scope.activeChan);
 		}
 	});

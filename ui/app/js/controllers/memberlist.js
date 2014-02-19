@@ -3,6 +3,9 @@ ircboksControllers.controller('MemberListCtrl', ['$scope', '$rootScope', '$route
 
 	$scope.activeServer = $routeParams.activeServer;
 	$scope.activeChan = $routeParams.activeChan;
+	if ($scope.activeChan === undefined) {//temporary hack for our status page
+		$scope.activeChan = $scope.activeServer;
+	}
 
 	$scope.$on("$routeChangeSuccess", function (event, next, current) {
 		if (Session.memberdict[$scope.activeChan] === undefined) {

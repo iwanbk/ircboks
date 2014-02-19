@@ -3,6 +3,9 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 
 	$scope.activeServer = $routeParams.activeServer;
 	$scope.activeChan = $routeParams.activeChan;
+	if ($scope.activeChan === undefined) {//temporary hack for our status page
+		$scope.activeChan = $scope.activeServer;
+	}
 
 
 	var initController = function () {
@@ -178,12 +181,6 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		wsock.send(JSON.stringify(msg));
 	};
 
-	//handler when we connected to an irc server
-	$scope.$on('001', function (event, msg) {
-		$scope.ircJoin($scope.channel);
-		console.log("connected to server");
-	});
-
 	//handle JOIN event
 	$scope.$on("JOIN", function (event, msg) {
 	});
@@ -281,4 +278,35 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 	});
 	initController();
 
+	var addToStatusPage = function (msg, eventType) {
+		var timestamp;
+		if (msg.timestamp === undefined) {
+			timestamp = new Date().getTime();
+		} else {
+			timestamp = msg.timestamp * timestamp;
+		}
+		var msgObj = new Message(msg.message, timestamp, msg.nick, msg.target, eventType);
+		$rootScope.chattab[$scope.activeServer].messages.push(msgObj);
+	};
+	//handler when we connected to an irc server
+	$scope.$on('001', function (event, msg) {
+		if ($scope.channel !== undefined && $scope.channel[0] == "#") {
+			$scope.ircJoin($scope.channel);
+		}
+		addToStatusPage(msg, "001");
+	});
+
+	$scope.$on('002', function (event, msg) {
+		addToStatusPage(msg, "002");
+	});
+	$scope.$on('003', function (event, msg) {
+		addToStatusPage(msg, "003");
+	});
+	$scope.$on('004', function (event, msg) {
+		addToStatusPage(msg, "004");
+	});
+
+	$scope.$on('005', function (event, msg) {
+		addToStatusPage(msg, "005");
+	});
 }]);
