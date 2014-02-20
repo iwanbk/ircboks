@@ -14,14 +14,14 @@ return{
     restrict: "A",
     link: function(scope, element, attributes) {
         scope.$on("Finished",function(){
-            if (scope.chattab[scope.activeChan].lastScrollPos === undefined || 
-              (scope.chattab[scope.activeChan].needScrollBottom !== undefined && 
-              scope.chattab[scope.activeChan].needScrollBottom === true)) {
+            var chat_hist = scope.chat_hist;
+            if (chat_hist.lastScrollPos === undefined ||
+              chat_hist.needScrollBottom === true) {
                 var scrollHeight = element[0].scrollHeight;
                 element.scrollTop(scrollHeight);
-                scope.chattab[scope.activeChan].needScrollBottom = false;
+                chat_hist.needScrollBottom = false;
             } else {
-              element.scrollTop(scope.chattab[scope.activeChan].lastScrollPos);
+              element.scrollTop(chat_hist.lastScrollPos);
             }
         });
     }

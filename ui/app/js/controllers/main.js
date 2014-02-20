@@ -1,5 +1,5 @@
-ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams',  '$location', 'wsock', 'Session',
-	function ($scope, $rootScope, $routeParams, $location, wsock,Session) {
+ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams',  '$location', 'wsock', 'Session', 'MsgHistService',
+	function ($scope, $rootScope, $routeParams, $location, wsock,Session, MsgHistService) {
 
 	$scope.activeServer = $routeParams.activeServer;
 	$scope.activeChan = $routeParams.activeChan;
@@ -7,85 +7,22 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		$scope.activeChan = $scope.activeServer;
 	}
 
-	var initController = function () {
-		//check if we already login
-		if (Session.isLogin === false) {//check if we already login
-			if(!$scope.$$phase) {
-				$scope.$apply(function(){
-					$location.path("/");
-				});
-			} else {
-				$location.path("/");
-			}
+	$scope.$on("$routeChangeSuccess", function (event, next, current) {
+		console.log("main:routeChangeSuccess");
+		if (Session.isLogin === undefined || Session.isLogin === false) {
+			$location.path("/");
 			return;
 		}
+		MsgHistService.checkInit($scope.activeChan);
+		$scope.chat_hist = MsgHistService.getChatHist($scope.activeChan);
+	});
 
-		//chat tab
-		if ($rootScope.chattab === undefined) {
-			console.log("initializing chattab");
-			$rootScope.chattab = {};
-		}
+	$scope.$on("$routeChangeStart", function (event, next, current) {
+		//save scrolling position
+		var chat_hist = MsgHistService.getChatHist($scope.activeChan);
+		chat_hist.lastScrollPos = $('#chat').scrollTop();
+	});
 
-		if ($rootScope.chattab[$scope.activeChan] === undefined) {
-			$rootScope.chattab[$scope.activeChan] = {
-				name: $scope.activeChan,
-				messages: []
-			};
-		}
-
-
-		//ask chanlog
-		if (!isFirstChanLogAsked($scope.activeChan)) {
-			if (isInChannel()) {
-				$scope.askChanLog($scope.activeChan);
-			} else {
-				$scope.askNickLog($scope.activeChan);
-			}
-		}
-
-	};
-
-	/**
-	* isFirstChanLogAsked will return true if log/history for this channel already asked at least once
-	*/
-	var isFirstChanLogAsked = function (channame) {
-		return ($rootScope.chattab[channame] !== undefined && $rootScope.chattab[channame].firstLogAsked !== undefined);
-	};
-
-	$scope.askNickLog = function (nick) {
-		console.log("askNickLog " + nick);
-		$rootScope.chattab[nick].firstLogAsked = true;
-		var msg = {
-			event: 'msghistNickReq',
-			data: {
-				userId: Session.userId,
-				sender: nick,
-				target: Session.nick
-			}
-		};
-		wsock.send(JSON.stringify(msg));
-	};
-
-	//Ask for channel logs/history
-	$scope.askChanLog = function (channame) {
-		console.log("ask chan log = " + channame);
-		if ($rootScope.chattab[channame] === undefined) {
-			$rootScope.chattab[channame] = {
-				name: channame,
-				messages: []
-			};
-		}
-
-		$rootScope.chattab[channame].firstLogAsked = true;
-		var msg = {
-			event: 'msghistChannel',
-			data: {
-				userId: Session.userId,
-				channel:channame
-			}
-		};
-		wsock.send(JSON.stringify(msg));
-	};
 
 	//send PRIVMSG
 	$scope.sendPrivMsg = function (target, message) {
@@ -107,8 +44,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 			target: msg.data.target
 		};
 
-		$rootScope.chattab[target].messages.push(log);
-		$rootScope.chattab[target].needScrollBottom = true;
+		MsgHistService.addNewMsg(target, log);
 	};
 
 	/**
@@ -121,10 +57,11 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		for (i = 0; i <  msg.logs.length; i++) {
 			var obj = msg.logs[i];
 			var message = new Message(obj.Message, obj.Timestamp, obj.Nick, obj.Target, "PRIVMSG");
-			$rootScope.chattab[message.nick].messages.unshift(message);
+			MsgHistService.addNewMsgFront(message.nick, message);
 		}
 		$scope.$apply();
 	});
+
 	/**
 	* msghistChannel is a message that contains channel message logs/history
 	*/
@@ -135,7 +72,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		for (i = 0; i <  msg.logs.length; i++) {
 			var obj = msg.logs[i];
 			var message = new Message(obj.Message, obj.Timestamp, obj.Nick, obj.Target, "PRIVMSG");
-			$rootScope.chattab[msg.channel].messages.unshift(message);
+			MsgHistService.addNewMsgFront(msg.channel, message);
 		}
 		$scope.$apply();
 	});
@@ -155,17 +92,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		} else {
 			tabName = msg.nick;
 		}
-
-		if ($rootScope.chattab[tabName] === undefined) {
-			console.log("create new chattab for tabName = " + tabName);
-			var new_tab = {
-				name:tabName,
-				messages:[]
-			};
-			$rootScope.chattab[tabName] = new_tab;
-		}
-		$rootScope.chattab[tabName].messages.push(msgObj);
-		$rootScope.chattab[tabName].needScrollBottom = true;
+		MsgHistService.addNewMsg(tabName, msgObj);
 		$scope.$apply();
 	});
 
@@ -272,11 +199,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		return prevDate != curDate;
 	};
 
-	$scope.$on("$routeChangeStart", function (event, next, current) {
-		$rootScope.chattab[$scope.activeChan].lastScrollPos = $('#chat').scrollTop();
-	});
-
-	initController();
+	//initController();
 
 	var addToStatusPage = function (msg, eventType) {
 		var timestamp;
@@ -286,7 +209,8 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 			timestamp = msg.timestamp * timestamp;
 		}
 		var msgObj = new Message(msg.message, timestamp, msg.nick, msg.target, eventType);
-		$rootScope.chattab[$scope.activeServer].messages.push(msgObj);
+		//$rootScope.chattab[$scope.activeServer].messages.push(msgObj);
+		MsgHistService.addNewMsg($scope.activeServer, msgObj);
 	};
 	//handler when we connected to an irc server
 	$scope.$on('001', function (event, msg) {

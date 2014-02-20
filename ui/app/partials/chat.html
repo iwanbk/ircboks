@@ -10,7 +10,7 @@
 <div id="chat_box" class="row col-md-12">
 	<div id="leftcol" class="col-md-2 well" ng-controller="targetListCtrl" ng-include="'partials/targetlist.html'">
 	</div>
-	<div id="middlecol" class="col-md-8" ng-include="'partials/mainchat.html'">
+	<div id="middlecol" class="col-md-8" ng-include="'partials/mainchat.html'" ng-controller="mainCtrl">
 	</div>
 	<div  id="rightcol" class="col-md-2 well" style="height:400px; overflow-y: scroll;" ng-controller="MemberListCtrl" ng-include="'partials/memberlist.html'">
 	</div>
