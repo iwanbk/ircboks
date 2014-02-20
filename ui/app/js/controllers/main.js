@@ -73,17 +73,6 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		$scope.$apply();
 	});
 
-	$scope.ircJoin = function (channel) {
-		var msg = {
-			event: 'ircJoin',
-			data: {
-				userId: Session.userId,
-				channel: channel
-			}
-		};
-		wsock.send(JSON.stringify(msg));
-	};
-
 	//handle JOIN event
 	$scope.$on("JOIN", function (event, msg) {
 	});

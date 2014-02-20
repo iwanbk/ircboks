@@ -30,6 +30,17 @@ ircboksControllers.controller('commandCtrl', ['$scope', '$rootScope', '$routePar
 		MsgHistService.addNewMsg(target, log);
 	};
 
+	$scope.ircJoin = function (channel) {
+		var msg = {
+			event: 'ircJoin',
+			data: {
+				userId: Session.userId,
+				channel: channel
+			}
+		};
+		wsock.send(JSON.stringify(msg));
+	};
+
 	/**
 	* Check if it is irc PRIVMSG command
 	*/
