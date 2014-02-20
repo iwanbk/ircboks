@@ -41,6 +41,7 @@ ircboksControllers.controller('targetListCtrl', ['$scope', '$rootScope', '$route
 	$scope.$on('ircBoxInfo', function (event, msg) {
 		Session.setTargetChannels(msg.chanlist);
 		$scope.chanlist = Session.targetChannels;
+		$scope.$apply();
 	});
 
 	/**
@@ -57,6 +58,7 @@ ircboksControllers.controller('targetListCtrl', ['$scope', '$rootScope', '$route
 	});
 
 	$scope.$on("$routeChangeSuccess", function (event, next, current) {
+		console.log("targetlist:routeChangeSuccess");
 		$scope.chanlist = Session.targetChannels;
 		$scope.userlist = Session.targetNicks;
 
