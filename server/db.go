@@ -13,6 +13,7 @@ type MessageHist struct {
 	Nick      string        `bson:"nick"`
 	Message   string        `bson:"message"`
 	Timestamp int64         `bson:"timestamp"`
+	ReadFlag  bool          `bson:"read_flag"`
 }
 
 type User struct {
