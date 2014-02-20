@@ -11,7 +11,7 @@
 	<div id="leftcol" class="col-md-2 well" ng-controller="targetListCtrl" ng-include="'partials/targetlist.html'">
 	</div>
 	<div id="middlecol" class="col-md-8">
-		<div  ng-controller="mainCtrl" id="chat" class="row" style="margin-bottom: 10px;height: 400px;overflow-y: scroll;overflow-x:hidden;" scroll-if  ng-include="'partials/mainchat.html'">
+		<div  ng-controller="mainCtrl" id="chat" class="row" style="margin-bottom: 10px;height: 90%;overflow-y: scroll;overflow-x:hidden;" scroll-if  ng-include="'partials/mainchat.html'">
 		</div>
 		<div class="row" ng-controller="commandCtrl">
 			<form role="form" class="form-inline" ng-submit="sendCommand()">
@@ -23,6 +23,6 @@
 			</form>
 		</div>
 	</div>
-	<div  id="rightcol" class="col-md-2 well" style="height:400px; overflow-y: scroll;" ng-controller="MemberListCtrl" ng-include="'partials/memberlist.html'">
+	<div  id="rightcol" class="col-md-2 well" style="height:100%;overflow-y: scroll;" ng-controller="MemberListCtrl" ng-include="'partials/memberlist.html'">
 	</div>
 </div>
