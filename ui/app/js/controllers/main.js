@@ -3,6 +3,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 
 	$scope.activeServer = $routeParams.activeServer;
 	$scope.activeChan = $routeParams.activeChan;
+
 	if ($scope.activeChan === undefined) {//temporary hack for our status page
 		$scope.activeChan = $scope.activeServer;
 	}
@@ -22,30 +23,6 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		var chat_hist = MsgHistService.getChatHist($scope.activeChan);
 		chat_hist.lastScrollPos = $('#chat').scrollTop();
 	});
-
-
-	//send PRIVMSG
-	$scope.sendPrivMsg = function (target, message) {
-		var msg = {
-			event: 'ircPrivMsg',
-			data: {
-				userId: Session.userId,
-				target: target,
-				message: message
-			}
-		};
-		wsock.send(JSON.stringify(msg));
-
-		var timestamp = new Date().getTime();
-		var log = {
-			message: msg.data.message,
-			timestamp: timestamp,
-			nick: Session.nick,
-			target: msg.data.target
-		};
-
-		MsgHistService.addNewMsg(target, log);
-	};
 
 	/**
 	* Message history of a nick
@@ -120,75 +97,6 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 	$scope.$on("QUIT", function (event, msg) {
 	});
 
-
-	/**
-	* ircBoxInfo contain all global info about this user.
-	*/
-	$scope.$on('ircBoxInfo', function (event, msg) {
-		$scope.$apply(function(){
-			for (var i in msg.chanlist) {
-				//ask chan log if needed
-				if (!isFirstChanLogAsked(msg.chanlist[i])) {
-					$scope.askChanLog(msg.chanlist[i]);
-				}
-			}
-		});
-	});
-
-
-	/**
-	* Check if it is irc PRIVMSG command
-	*/
-	var isIrcPrivMsg = function (command) {
-		return command[0] != "/";
-	};
-
-	/**
-	* parse and dispatch command
-	*/
-	$scope.dispatchCommand = function (command) {
-		var cmdArr = command.split(" ");
-		switch (cmdArr[0]) {
-			case "join":
-				$scope.ircJoin(cmdArr[1]);
-				break;
-			case "msg":
-				sendMsg(command);
-				break;
-			default:
-				alert("unsupported command : " + cmdArr[0]);
-		}
-	};
-	function sendMsg(command) {
-		var cmdArr = command.split(" ");
-		if (cmdArr.length < 3) {
-			return;
-		}
-		//message position
-		var pos = command.indexOf(cmdArr[2]);
-		msg =  $.trim(command.substr(pos));
-		$scope.sendPrivMsg(cmdArr[1], msg);
-	}
-
-	/**
-	* Send irc command
-	*/
-	$scope.sendCommand = function () {
-		if (isIrcPrivMsg($scope.ircCommand)) {
-			$scope.sendPrivMsg($scope.activeChan, $scope.ircCommand);
-		} else {
-			$scope.dispatchCommand($scope.ircCommand.substr(1));
-		}
-		$scope.ircCommand = "";
-	};
-
-	/**
-	* isInChannel will return true if we are in channel, not with other user
-	*/
-	var isInChannel = function () {
-		return ($scope.activeChan[0] == "#");
-	};
-
 	//check if we need to show date
 	$scope.showDate = function (idx, messages) {
 		if (idx === 0) {
@@ -212,6 +120,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		//$rootScope.chattab[$scope.activeServer].messages.push(msgObj);
 		MsgHistService.addNewMsg($scope.activeServer, msgObj);
 	};
+
 	//handler when we connected to an irc server
 	$scope.$on('001', function (event, msg) {
 		if ($scope.channel !== undefined && $scope.channel[0] == "#") {

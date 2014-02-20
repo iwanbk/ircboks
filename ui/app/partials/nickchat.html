@@ -10,6 +10,17 @@
 <div id="chat_box" class="row col-md-12">
 	<div id="leftcol" class="col-md-2 well" ng-controller="targetListCtrl" ng-include="'partials/targetlist.html'">
 	</div>
-	<div id="middlecol" class="col-md-10" ng-include="'partials/mainchat.html'">
+	<div id="middlecol" class="col-md-10">
+		<div  ng-controller="mainCtrl" id="chat" class="row" style="margin-bottom: 10px;height: 400px;overflow-y: scroll;overflow-x:hidden;" scroll-if  ng-include="'partials/mainchat.html'">
+		</div>
+		<div class="row" ng-controller="commandCtrl">
+			<form role="form" class="form-inline" ng-submit="sendCommand()">
+				<div class="form-group col-md-10">
+					<label class="sr-only" for="ircCommand">IRC command</label>
+					<input type="text" class="form-control" id="ircCommand" placeholder="Type your command/message here"  ng-model="ircCommand" required>
+				</div>
+				<button type="submit" class="btn btn-default">Login</button>
+			</form>
+		</div>
 	</div>
 </div>

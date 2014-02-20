@@ -18,8 +18,9 @@ angular.module('msghist', ['comm', 'session'])
 	Service.checkInit = function (target) {
 		if (this.histdict[target] === undefined) {
 			this.addTargetHist(target);
-			console.log("ask askUnreadMsg of " + target);
 			this.askUnreadMsg(target);
+		}
+		if (this.histdict[target].histAsked === false) {
 			this.askLog(target);
 		}
 	};
