@@ -20,8 +20,9 @@ angular.module('msghist', ['comm', 'session'])
 			this.addTargetHist(target);
 			this.askUnreadMsg(target);
 		}
-		if (this.histdict[target].histAsked === false) {
+		if (this.histdict[target].isHistAsked() === false) {
 			this.askLog(target);
+			this.histdict[target].setHistAsked();
 		}
 	};
 

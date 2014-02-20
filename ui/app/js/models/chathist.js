@@ -37,7 +37,15 @@
 
 		chathist.prototype.prependMsg = function (msg) {
 			this.messages.unshift(msg);
-		};		
+		};
+
+		chathist.prototype.isHistAsked = function () {
+			return this.histAsked;
+		};
+
+		chathist.prototype.setHistAsked = function () {
+			this.histAsked = true;
+		};
 
 		return chathist;
 	})();
