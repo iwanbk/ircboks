@@ -105,3 +105,41 @@ func MsgHistNick(msgStr string, ws *websocket.Conn) {
 	//send it back
 	websocket.Message.Send(ws, jsStr)
 }
+
+type histUnreadChanReqData struct {
+	UserId  string `json:"userId"`
+	Channel string `json:"channel"`
+}
+type histUnreadChanReq struct {
+	Event string
+	Data  histUnreadChanReqData `json:"data"`
+}
+
+//MsgHistUnreadChanel get unread message of a channel
+func MsgHistUnreadChannel(msgStr string, ws *websocket.Conn) {
+	msg := histUnreadChanReq{}
+	if err := json.Unmarshal([]byte(msgStr), &msg); err != nil {
+		log.Error("failed to parse MsgHistUnreadChannel msg = " + err.Error())
+		return
+	}
+	var hists []MessageHist
+	query := bson.M{"userId": msg.Data.UserId, "target": msg.Data.Channel, "read_flag": false}
+	err := DBQueryArr("ircboks", "msghist", query, "-timestamp", 40, &hists)
+
+	if err != nil {
+		log.Error("[MsgHistUnreadChannel]fetching unread channel history:" + err.Error())
+		return
+	}
+
+	m := make(map[string]interface{})
+	m["messages"] = hists
+	m["channel"] = msg.Data.Channel
+
+	event := "msghistUnreadChannelResp"
+
+	jsStr, err := jsonMarshal(event, m)
+	if err != nil {
+		log.Error("[MsgHistUnreadChannel] failed to marshalling json = " + err.Error())
+	}
+	EndpointSend(ws, jsStr)
+}

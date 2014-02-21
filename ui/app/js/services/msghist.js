@@ -18,10 +18,10 @@ angular.module('msghist', ['comm', 'session'])
 	Service.checkInit = function (target) {
 		if (this.histdict[target] === undefined) {
 			this.addTargetHist(target);
-			this.askUnreadMsg(target);
 		}
 		if (this.histdict[target].isHistAsked() === false) {
-			this.askLog(target);
+			//this.askLog(target);
+			this.askUnreadMsg(target);
 			this.histdict[target].setHistAsked();
 		}
 	};
@@ -33,6 +33,9 @@ angular.module('msghist', ['comm', 'session'])
 		return this.histdict[target];
 	};
 
+	/**
+	* Ask unread messages of a target for this userId
+	*/
 	Service.askUnreadMsg = function (target) {
 		if (target[0] == "#") {
 			this._askChanUnreadMsg(target);
@@ -53,6 +56,7 @@ angular.module('msghist', ['comm', 'session'])
 		};
 		wsock.send(JSON.stringify(msg));
 	};
+
 	/**
 	* Ask unread message from a nick
 	*/

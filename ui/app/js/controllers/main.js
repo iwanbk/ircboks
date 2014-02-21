@@ -54,6 +54,21 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		$scope.$apply();
 	});
 
+	/**
+	* msghistUnreadChannelResp is a message that contains unread message of a channel
+	*/
+	$scope.$on('msghistUnreadChannelResp', function (event, msg) {
+		if (msg.messages === undefined || msg.messages === null) {//empty logs
+			return;
+		}
+		for (i = 0; i <  msg.messages.length; i++) {
+			var obj = msg.messages[i];
+			var message = new Message(obj.Message, obj.Timestamp, obj.Nick, obj.Target, "PRIVMSG");
+			MsgHistService.addNewMsgFront(msg.channel, message);
+		}
+		$scope.$apply();
+	});
+
 
 	/**
 	* PRIVMSG handler
