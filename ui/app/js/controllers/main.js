@@ -120,6 +120,12 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 	$scope.$on("QUIT", function (event, msg) {
 	});
 
+	$scope.$on('ircBoxInfo', function (event, msg) {
+		for (i = 0; i < msg.chanlist.length; i++) {
+			MsgHistService.checkInit(msg.chanlist[i]);
+		}
+	});
+
 	//check if we need to show date
 	$scope.showDate = function (idx, messages) {
 		if (idx === 0) {
