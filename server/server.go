@@ -112,8 +112,6 @@ func handleBoxMsg(wsCtx *WsContext, event, msg string) {
 		go MsgHistChannel(msg, wsCtx.Ws)
 	case "msghistNickReq":
 		go MsgHistNick(msg, wsCtx.Ws)
-	case "msghistUnreadChannel":
-		go MsgHistUnreadChannel(msg, wsCtx.Ws)
 	default:
 		log.Error("Unhandled event = " + event)
 	}
