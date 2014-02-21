@@ -20,12 +20,14 @@ angular.module('msghist', ['comm', 'session'])
 			this.addTargetHist(target);
 		}
 		if (this.histdict[target].isHistAsked() === false) {
-			//this.askLog(target);
-			this.askUnreadMsg(target);
+			this.askChatHist(target);
 			this.histdict[target].setHistAsked();
 		}
 	};
 
+	/**
+	* get ChatHist object of a target
+	*/
 	Service.getChatHist = function (target) {
 		if (this.histdict[target] === undefined) {
 			this.addTargetHist(target);
@@ -34,34 +36,34 @@ angular.module('msghist', ['comm', 'session'])
 	};
 
 	/**
-	* Ask unread messages of a target for this userId
+	* Mark all messages as read
 	*/
-	Service.askUnreadMsg = function (target) {
-		if (target[0] == "#") {
-			this._askChanUnreadMsg(target);
-		} else {
-			this._askNickUnreadMsg(target);
+	Service.markAllAsRead = function (target) {
+		var oidArr = this.histdict[target].getUnreadOidArr();
+		if (oidArr.length === 0) {
+			return;
 		}
-	};
-	/**
-	* Ask unread message of a channel
-	*/
-	Service._askChanUnreadMsg = function (chan_name) {
 		var msg = {
-			event: "msghistUnreadChannel",
+			event: 'markMsgRead',
 			data: {
 				userId: Session.userId,
-				channel: chan_name
+				oids: oidArr
 			}
 		};
+		this.histdict[target].unreadCount = 0;
 		wsock.send(JSON.stringify(msg));
 	};
 
-	/**
-	* Ask unread message from a nick
-	*/
-	Service._askNickUnreadMsg = function (nick) {
-
+	Service.markAsRead = function (oid) {
+		var oidArr = [oid];
+		var msg = {
+			event: 'markMsgRead',
+			data: {
+				userId: Session.userId,
+				oids: oidArr
+			}
+		};
+		wsock.send(JSON.stringify(msg));
 	};
 
 	/**
@@ -81,10 +83,9 @@ angular.module('msghist', ['comm', 'session'])
 			this.addTargetHist(target);
 		}
 		this.histdict[target].prependMsg(msg);
-		//this.histdict[target].needScrollBottom = true;
 	};
 
-	Service.askLog = function (target) {
+	Service.askChatHist = function (target) {
 		if (target[0] == "#") {
 			Service.askChanLog(target);
 		} else {

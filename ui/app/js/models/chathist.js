@@ -33,10 +33,16 @@
 
 		chathist.prototype.appendMsg = function (msg) {
 			this.messages.push(msg);
+			if (msg.readFlag === false) {
+				this.unreadCount++;
+			}
 		};
 
 		chathist.prototype.prependMsg = function (msg) {
 			this.messages.unshift(msg);
+			if (msg.readFlag === false) {
+				this.unreadCount++;
+			}
 		};
 
 		chathist.prototype.isHistAsked = function () {
@@ -45,6 +51,20 @@
 
 		chathist.prototype.setHistAsked = function () {
 			this.histAsked = true;
+		};
+
+		/**
+		* get array of oid of unread messages
+		*/
+		chathist.prototype.getUnreadOidArr = function () {
+			var oidArr = [];
+			for (i = 0; i < this.messages.length; i++) {
+				var msg = this.messages[i];
+				if (!msg.isRead()) {
+					oidArr.push(msg.oid);
+				}
+			}
+			return oidArr;
 		};
 
 		return chathist;

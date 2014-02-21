@@ -1,8 +1,9 @@
-ircboksControllers.controller('targetListCtrl', ['$scope', '$rootScope', '$routeParams',  '$location', 'wsock', 'Session', 
-	function ($scope, $rootScope, $routeParams, $location, wsock, Session) {
+ircboksControllers.controller('targetListCtrl', ['$scope', '$rootScope', '$routeParams',  '$location', 'wsock', 'Session', 'MsgHistService',
+	function ($scope, $rootScope, $routeParams, $location, wsock, Session, MsgHistService) {
 
 	$scope.activeServer = $routeParams.activeServer;
 	$scope.activeChan = $routeParams.activeChan;
+	$scope.histdict = MsgHistService.histdict;
 	if ($scope.activeChan === undefined) {//temporary hack for our status page
 		$scope.activeChan = $scope.activeServer;
 	}

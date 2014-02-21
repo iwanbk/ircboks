@@ -16,6 +16,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		}
 		MsgHistService.checkInit($scope.activeChan);
 		$scope.chat_hist = MsgHistService.getChatHist($scope.activeChan);
+		MsgHistService.markAllAsRead($scope.activeChan);
 	});
 
 	$scope.$on("$routeChangeStart", function (event, next, current) {
@@ -33,7 +34,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		}
 		for (i = 0; i <  msg.logs.length; i++) {
 			var obj = msg.logs[i];
-			var message = new Message(obj.Message, obj.Timestamp, obj.Nick, obj.Target, "PRIVMSG");
+			var message = new Message(obj.Message, obj.Timestamp, obj.Nick, obj.Target, obj.readFlag, "PRIVMSG", obj.oid);
 			MsgHistService.addNewMsgFront(message.nick, message);
 		}
 		$scope.$apply();
@@ -48,8 +49,18 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		}
 		for (i = 0; i <  msg.logs.length; i++) {
 			var obj = msg.logs[i];
-			var message = new Message(obj.Message, obj.Timestamp, obj.Nick, obj.Target, "PRIVMSG");
+			var readFlag = false;
+
+			if ($scope.activeChan === obj.Target) {
+				readFlag = true;
+			}
+
+			var message = new Message(obj.Message, obj.Timestamp, obj.Nick, obj.Target, readFlag, "PRIVMSG", obj.Id);
 			MsgHistService.addNewMsgFront(msg.channel, message);
+
+			if (readFlag === true && obj.ReadFlag === false) {
+				MsgHistService.markAsRead(obj.Id);
+			}
 		}
 		$scope.$apply();
 	});
@@ -57,26 +68,25 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 	/**
 	* msghistUnreadChannelResp is a message that contains unread message of a channel
 	*/
+	
 	$scope.$on('msghistUnreadChannelResp', function (event, msg) {
 		if (msg.messages === undefined || msg.messages === null) {//empty logs
 			return;
 		}
 		for (i = 0; i <  msg.messages.length; i++) {
 			var obj = msg.messages[i];
-			var message = new Message(obj.Message, obj.Timestamp, obj.Nick, obj.Target, "PRIVMSG");
+			var message = new Message(obj.Message, obj.Timestamp, obj.Nick, obj.Target, obj.ReadFlag, "PRIVMSG", obj.Id);
 			MsgHistService.addNewMsgFront(msg.channel, message);
 		}
 		$scope.$apply();
 	});
-
 
 	/**
 	* PRIVMSG handler
 	*/
 	$scope.$on('ircPrivMsg', function (event, msg) {
 		var tabName = "";
-
-		var msgObj = new Message(msg.message, msg.timestamp, msg.nick, msg.target, "PRIVMSG");
+		var readFlag = false;
 
 		//update chattab & chanlist/otheruserlist
 		if (msg.target[0] == "#") {
@@ -84,8 +94,17 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		} else {
 			tabName = msg.nick;
 		}
+		if (tabName == $scope.activeChan) {
+			readFlag = true;
+		}
+		var msgObj = new Message(msg.message, msg.timestamp, msg.nick, msg.target, readFlag, "PRIVMSG", msg.Oid);
 		MsgHistService.addNewMsg(tabName, msgObj);
+		
 		$scope.$apply();
+
+		if (readFlag === true && msg.ReadFlag === false) {
+			MsgHistService.markAsRead(msg.oid);
+		}
 	});
 
 	//handle JOIN event
@@ -120,7 +139,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		} else {
 			timestamp = msg.timestamp * timestamp;
 		}
-		var msgObj = new Message(msg.message, timestamp, msg.nick, msg.target, eventType);
+		var msgObj = new Message(msg.message, timestamp, msg.nick, msg.target, true, eventType);
 		//$rootScope.chattab[$scope.activeServer].messages.push(msgObj);
 		MsgHistService.addNewMsg($scope.activeServer, msgObj);
 		$scope.$apply();
