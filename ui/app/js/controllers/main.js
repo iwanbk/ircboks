@@ -108,6 +108,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		var msgObj = new Message(msg.message, timestamp, msg.nick, msg.target, eventType);
 		//$rootScope.chattab[$scope.activeServer].messages.push(msgObj);
 		MsgHistService.addNewMsg($scope.activeServer, msgObj);
+		$scope.$apply();
 	};
 
 	//handler when we connected to an irc server
