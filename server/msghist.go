@@ -105,3 +105,27 @@ func MsgHistNick(msgStr string, ws *websocket.Conn) {
 	//send it back
 	websocket.Message.Send(ws, jsStr)
 }
+
+type MsgHistMarkReadReqData struct {
+	UserId string   `json="userId"`
+	Oids   []string `json="oids"`
+}
+type MsgHistMarkReadReq struct {
+	Event string                 `json="event"`
+	Data  MsgHistMarkReadReqData `json="data"`
+}
+
+//MsgHistMarkRead mark messages readFlag as read
+func MsgHistMarkRead(msgStr string) {
+	msg := MsgHistMarkReadReq{}
+	err := json.Unmarshal([]byte(msgStr), &msg)
+	if err != nil {
+		log.Error("MsgHistMarkRead(): error unmarshalling json:" + err.Error())
+		return
+	}
+	for _, oid := range msg.Data.Oids {
+		updQuery := bson.M{"$set": bson.M{"read_flag": true}}
+
+		DBUpdateOne("ircboks", "msghist", oid, updQuery)
+	}
+}

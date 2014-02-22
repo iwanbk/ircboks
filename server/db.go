@@ -70,3 +70,20 @@ func DBGetOne(dbName, colName string, bsonM bson.M, doc interface{}) error {
 	}
 	return nil
 }
+
+func DBUpdateOne(dbName, colName, oid string, updateQuery bson.M) error {
+	sess, err := mgo.Dial(Config.GetString("mongodb_uri"))
+	if err != nil {
+		log.Error("[DBUpdateOne]failed to connect to server :" + err.Error())
+		return nil
+	}
+	defer sess.Close()
+
+	sess.SetSafe(&mgo.Safe{})
+
+	err = sess.DB(dbName).C(colName).Update(bson.M{"_id": bson.ObjectIdHex(oid)}, updateQuery)
+	if err != nil {
+		log.Error("[DBUpdateOne]dbName = " + dbName + ".collection = " + colName + ".oid = " + oid + ". err = " + err.Error())
+	}
+	return err
+}
