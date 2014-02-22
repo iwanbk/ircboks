@@ -39,7 +39,6 @@ angular.module('msghist', ['comm', 'session'])
 	* Mark all messages as read
 	*/
 	Service.markAllAsRead = function (target) {
-		console.log("markAllAsRead");
 		var oidArr = this.histdict[target].getUnreadOidArr();
 		if (oidArr.length === 0) {
 			return;

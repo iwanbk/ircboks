@@ -34,8 +34,18 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		}
 		for (i = 0; i <  msg.logs.length; i++) {
 			var obj = msg.logs[i];
-			var message = new Message(obj.Message, obj.Timestamp, obj.Nick, obj.Target, obj.readFlag, "PRIVMSG", obj.oid);
+			var readFlag = obj.ReadFlag;
+
+			if ($scope.activeChan === obj.Nick) {
+				readFlag = true;
+			}
+			var message = new Message(obj.Message, obj.Timestamp, obj.Nick, obj.Target, readFlag, "PRIVMSG", obj.Id);
+			
 			MsgHistService.addNewMsgFront(message.nick, message);
+
+			if (readFlag === true && obj.ReadFlag === false) {
+				MsgHistService.markAsRead(obj.Id);
+			}
 		}
 		$scope.$apply();
 	});

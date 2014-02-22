@@ -20,14 +20,9 @@ ircboksControllers.controller('commandCtrl', ['$scope', '$rootScope', '$routePar
 		wsock.send(JSON.stringify(msg));
 
 		var timestamp = new Date().getTime();
-		var log = {
-			message: msg.data.message,
-			timestamp: timestamp,
-			nick: Session.nick,
-			target: msg.data.target
-		};
+		var msgObj = new Message(message, timestamp / 1000, Session.nick, target, true, "PRIVMSG");
 
-		MsgHistService.addNewMsg(target, log);
+		MsgHistService.addNewMsg(target, msgObj);
 	};
 
 	$scope.ircJoin = function (channel) {
