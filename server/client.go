@@ -280,6 +280,7 @@ func (c *IRCClient) processPrivMsg(e ogric.Event) {
 	m["nick"] = nick
 	m["message"] = message
 	m["timestamp"] = timestamp
+	m["readFlag"] = false
 
 	//save this message to DB
 	oid := insertMsgHistory(c.userId, target, nick, message, timestamp, false)
