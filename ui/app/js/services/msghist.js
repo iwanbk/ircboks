@@ -98,8 +98,7 @@ angular.module('msghist', ['comm', 'session'])
 			event: 'msghistNickReq',
 			data: {
 				userId: Session.userId,
-				sender: nick,
-				target: Session.nick
+				nick: nick
 			}
 		};
 		wsock.send(JSON.stringify(msg));

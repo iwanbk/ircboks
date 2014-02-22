@@ -41,7 +41,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 			}
 			var message = new Message(obj.Message, obj.Timestamp, obj.Nick, obj.Target, readFlag, "PRIVMSG", obj.Id);
 			
-			MsgHistService.addNewMsgFront(message.nick, message);
+			MsgHistService.addNewMsgFront(msg.nick, message);
 
 			if (readFlag === true && obj.ReadFlag === false) {
 				MsgHistService.markAsRead(obj.Id);

@@ -14,6 +14,7 @@ type MessageHist struct {
 	Message   string        `bson:"message"`
 	Timestamp int64         `bson:"timestamp"`
 	ReadFlag  bool          `bson:"read_flag"`
+	ToChannel bool          `bson:"to_channel"`
 }
 
 type User struct {

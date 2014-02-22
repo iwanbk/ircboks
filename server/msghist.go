@@ -22,8 +22,7 @@ type chanHistReq struct {
 
 //nick history request data
 type nickHistReqData struct {
-	Sender string `json="sender"`
-	Target string `json="target"`
+	Nick   string `json="nick"`
 	UserId string `json="userId"`
 }
 
@@ -48,7 +47,7 @@ func MsgHistChannel(msgStr string, ws *websocket.Conn) {
 	var res []MessageHist
 
 	query := bson.M{"userId": msg.Data.UserId, "target": msg.Data.Channel}
-	err = DBQueryArr("ircboks", "msghist", query, "-timestamp", 40, &res)
+	err = DBQueryArr("ircboks", "msghist", query, "-timestamp", 50, &res)
 	if err != nil {
 		log.Error("[MsgHistChannel]fetching channel history:" + err.Error())
 		return
@@ -82,8 +81,11 @@ func MsgHistNick(msgStr string, ws *websocket.Conn) {
 	//get data from DB
 	var hists []MessageHist
 
-	query := bson.M{"userId": msg.Data.UserId, "target": msg.Data.Target, "nick": msg.Data.Sender}
-	err = DBQueryArr("ircboks", "msghist", query, "-timestamp", 40, &hists)
+	query1 := bson.M{"userId": msg.Data.UserId, "nick": msg.Data.Nick, "to_channel": false} //message from this nick, not in channel
+	query2 := bson.M{"userId": msg.Data.UserId, "target": msg.Data.Nick}                    //message to this nick
+
+	query := bson.M{"$or": []bson.M{query1, query2}}
+	err = DBQueryArr("ircboks", "msghist", query, "-timestamp", 50, &hists)
 	if err != nil {
 		log.Error("[MsgHistNick]fetching channel nick:" + err.Error())
 		return
@@ -92,8 +94,7 @@ func MsgHistNick(msgStr string, ws *websocket.Conn) {
 	//build json
 	m := make(map[string]interface{})
 	m["logs"] = hists
-	m["sender"] = msg.Data.Sender
-	m["target"] = msg.Data.Target
+	m["nick"] = msg.Data.Nick
 
 	event := "msghistNickResp"
 

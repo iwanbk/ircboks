@@ -299,7 +299,11 @@ func (c *IRCClient) processPrivMsg(e ogric.Event) {
 func insertMsgHistory(userId, target, nick, message string, timestamp int64, readFlag bool) bson.ObjectId {
 	objectId := bson.NewObjectId()
 	go func() {
-		doc := MessageHist{objectId, userId, target, nick, message, timestamp, readFlag}
+		toChannel := false
+		if string(target[0]) == "#" {
+			toChannel = true
+		}
+		doc := MessageHist{objectId, userId, target, nick, message, timestamp, readFlag, toChannel}
 		err := DBInsert("ircboks", "msghist", &doc)
 		if err != nil {
 			log.Error("[insertMsgHistory] failed : " + err.Error())
