@@ -1,7 +1,7 @@
 <ul><li><a href="#/{{activeServer}}">status</a></li></ul>
 <ul>
-	<li ng-repeat="chan in chanlist"><a href="#/{{activeServer}}/c/{{chan.encName}}">{{chan.name}}</a><span class="badge">{{histdict[chan.name].unreadCount}}</span></li>
+	<li ng-repeat="chan in chanlist"><a href="#/{{activeServer}}/c/{{chan.encName}}">{{chan.name}}</a> <span ng-show="histdict[chan.name].unreadCount > 0" class="badge">{{histdict[chan.name].unreadCount}}</span></li>
 </ul>
 <ul>
-	<li ng-repeat="user in userlist track by $index"><a href="#/{{activeServer}}/{{user}}">{{user}}</a><span class="badge">{{histdict[user].unreadCount}}</span></li>
+	<li ng-repeat="user in userlist track by $index"><a href="#/{{activeServer}}/{{user}}">{{user}}</a> <span ng-show="histdict[user].unreadCount > 0" class="badge">{{histdict[user].unreadCount}}</span></li>
 </ul>
