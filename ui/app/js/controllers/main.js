@@ -49,7 +49,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		}
 		for (i = 0; i <  msg.logs.length; i++) {
 			var obj = msg.logs[i];
-			var readFlag = false;
+			var readFlag = obj.ReadFlag;
 
 			if ($scope.activeChan === obj.Target) {
 				readFlag = true;
@@ -71,7 +71,6 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 	*/
 	$scope.$on('ircPrivMsg', function (event, msg) {
 		var tabName = "";
-		var readFlag = false;
 
 		//update chattab & chanlist/otheruserlist
 		if (msg.target[0] == "#") {
@@ -79,6 +78,9 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		} else {
 			tabName = msg.nick;
 		}
+
+		var readFlag = msg.readFlag;
+
 		if (tabName == $scope.activeChan) {
 			readFlag = true;
 		}
@@ -87,7 +89,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		
 		$scope.$apply();
 
-		if (readFlag === true) {
+		if (readFlag === true && msg.readFlag === false) {
 			MsgHistService.markAsRead(msg.oid);
 		}
 	});
