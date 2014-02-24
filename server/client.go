@@ -207,7 +207,6 @@ var eventsToIgnore = map[string]bool{
 }
 
 var eventsToForward = map[string]bool{
-	"001":    true,
 	"002":    true,
 	"003":    true,
 	"004":    true,
@@ -231,6 +230,8 @@ func (c *IRCClient) handleIrcEvent(evt ogric.Event) {
 	}
 	//custom handler
 	switch evt.Code {
+	case "001":
+		c.process001(evt)
 	case "PRIVMSG":
 		c.processPrivMsg(evt)
 	case "JOIN":
@@ -353,4 +354,18 @@ func (c *IRCClient) processJoined(e ogric.Event) {
 	channelName := e.Arguments[0]
 	c.chanJoinedSet[channelName] = true
 	c.forwardEvent(e)
+}
+
+/*
+process001 will handle 001 (IRC connected event):
+- new connection : forward this event to endpoint
+- reconnect after disconnect : rejoin channel
+*/
+func (c *IRCClient) process001(e ogric.Event) {
+	c.forwardEvent(e)
+
+	for chanName, _ := range c.chanJoinedSet {
+		c.client.Join(chanName)
+		delete(c.chanJoinedSet, chanName)
+	}
 }
