@@ -193,31 +193,31 @@ func (c *IRCClient) Loop(info *ClientContext) {
 }
 
 var eventsToIgnore = map[string]bool{
-	"250":    true, //RPL_STATSCONN
-	"251":    true, //RPL_LUSERCLIENT
-	"252":    true, //RPL_LUSEROP
-	"253":    true, //RPL_LUSERUNKNOWN
-	"254":    true, //RPL_LUSERCHANNELS
-	"255":    true, //RPL_LUSERME
-	"265":    true, //RPL_LOCALUSERS
-	"266":    true, //RPL_GLOBALUSER
-	"372":    true, //RPL_MOTD
-	"375":    true, //RPL_MOTDSTART
-	"376":    true, //RPL_ENDOFMOTD
-	"PING":   true,
-	"PONG":   true,
-	"NOTICE": true,
-	"MODE":   true,
+	"250":  true, //RPL_STATSCONN
+	"251":  true, //RPL_LUSERCLIENT
+	"252":  true, //RPL_LUSEROP
+	"253":  true, //RPL_LUSERUNKNOWN
+	"254":  true, //RPL_LUSERCHANNELS
+	"255":  true, //RPL_LUSERME
+	"265":  true, //RPL_LOCALUSERS
+	"266":  true, //RPL_GLOBALUSER
+	"PING": true,
+	"PONG": true,
+	"MODE": true,
 }
 
 var eventsToForward = map[string]bool{
-	"001":  true,
-	"002":  true,
-	"003":  true,
-	"004":  true,
-	"005":  true,
-	"PART": true,
-	"QUIT": true,
+	"001":    true,
+	"002":    true,
+	"003":    true,
+	"004":    true,
+	"005":    true,
+	"372":    true, //RPL_MOTD
+	"375":    true, //RPL_MOTDSTART
+	"376":    true, //RPL_ENDOFMOTD
+	"NOTICE": true,
+	"PART":   true,
+	"QUIT":   true,
 }
 
 func (c *IRCClient) handleIrcEvent(evt ogric.Event) {
