@@ -228,19 +228,18 @@ func (c *IRCClient) handleIrcEvent(evt ogric.Event) {
 		c.forwardEvent(evt)
 		return
 	}
-	//custom handler
-	switch evt.Code {
-	case "001":
-		c.process001(evt)
-	case "PRIVMSG":
-		c.processPrivMsg(evt)
-	case "JOIN":
-		c.processJoined(evt)
-	case "353":
-		c.processStartNames(evt)
-	case "366":
-		c.processEndNames(evt)
-	default:
+	fnMap := map[string]func(ogric.Event){
+		"001":     c.process001,
+		"PRIVMSG": c.processPrivMsg,
+		"JOIN":    c.processJoined,
+		"353":     c.processStartNames,
+		"366":     c.processEndNames,
+	}
+
+	fn, ok := fnMap[evt.Code]
+	if ok {
+		fn(evt)
+	} else {
 		log.Info("Unhandled event = " + evt.Code)
 	}
 }
@@ -263,8 +262,6 @@ func (c *IRCClient) forwardEvent(evt ogric.Event) {
 	if err != nil {
 		return
 	}
-
-	log.Debug("[IRCClient] forward '" + evt.Code + "' to userId : " + c.userId)
 
 	EndpointPublishId(c.userId, jsStr)
 }
