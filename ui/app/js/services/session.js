@@ -1,5 +1,5 @@
-angular.module('session', [])
-.factory('Session', ['$q', '$rootScope',  function ($q, $rootScope) {
+angular.module('session', ['comm'])
+.factory('Session', ['$q', '$rootScope', 'wsock', function ($q, $rootScope, wsock) {
 	var Service = {
 		userId: null,
 		nick: null,
@@ -17,15 +17,19 @@ angular.module('session', [])
 		targetNicks:[] //target nicks array
 	};
 
+	/**
+	* init  members object of a channel
+	*/
 	Service.initMember = function (channel) {
 		if (this.memberdict[channel] === undefined) {
 			this.memberdict[channel] = new Members(channel);
+			askChannelNames(channel);
 		}
 	};
 	//addMember add nick as a member of a channel
 	Service.addMember = function (nick, channel) {
 		if (this.memberdict[channel] === undefined) {
-			this.memberdict[channel] = new Members(channel);
+			Service.initMember(channel);
 		}
 		this.memberdict[channel].addNick(nick);
 	};
@@ -37,6 +41,9 @@ angular.module('session', [])
 		}
 	};
 
+	/**
+	* Del nick from member of all joined channel.
+	*/
 	Service.delMemberFromAll = function (nick) {
 		for (var channel in this.memberdict) {
 			if (channel[0] != "#") {
@@ -46,12 +53,33 @@ angular.module('session', [])
 		}
 	};
 
+	/**
+	* add member array to memberlist of a channel
+	*/
 	Service.addMemberArr = function (nickArr, channel) {
 		if (this.memberdict[channel] === undefined) {
-			this.memberdict[channel] = new Members(channel);
+			this.initMember(channel);
 		}
 		this.memberdict[channel].add(nickArr, false);
 	};
+
+	/**
+	* send NAMES command for a channel
+	*/
+	var askChannelNames = function (channel) {
+		if (channel[0] != "#") {
+			return;
+		}
+		var msg = {
+			event:"ircNames",
+			data: {
+				userId: this.userId,
+				channel: channel
+			}
+		};
+		wsock.send(JSON.stringify(msg));
+	};
+
 
 	//check if a channel already in target list
 	var isTargetChanExist = function (chan_name) {
@@ -90,8 +118,6 @@ angular.module('session', [])
 			this.targetChannels.push(chan);
 		}
 	};
-
-	console.log("Target Service initialized");
 	return Service;
 }])
 ;

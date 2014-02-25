@@ -9,30 +9,12 @@ ircboksControllers.controller('MemberListCtrl', ['$scope', '$rootScope', '$route
 
 	$scope.$on("$routeChangeSuccess", function (event, next, current) {
 		if (Session.memberdict[$scope.activeChan] === undefined) {
-			askChannelNames($scope.activeChan);
-			Session.memberdict[$scope.activeChan] = new Members();
+			Session.initMember($scope.activeChan);
 		}
 		$scope.members = Session.memberdict[$scope.activeChan];
 	});
 
 	/**
-	* send NAMES command.
-	*/
-	var askChannelNames = function (channel) {
-		if (channel[0] != "#") {
-			return;
-		}
-		var msg = {
-			event:"ircNames",
-			data: {
-				userId: Session.userId,
-				channel: channel
-			}
-		};
-		wsock.send(JSON.stringify(msg));
-	};
-
-		/**
 	* channelNames message is message that contain list of channel members.
 	* it is 353 and 366 code
 	*/
