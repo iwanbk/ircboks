@@ -1,24 +1,30 @@
 angular.module('comm', [])
 .factory('wsock', ['$q', '$rootScope',  function ($q, $rootScope) {
-	var Service = {};
+	var Service = {
+		isWsOpen: false
+	};
 	var ws;
-	var isWsOpen = false;
 	
 	Service.connect = function (url) {
+		$rootScope.$broadcast("wsStatus", "connecting");
 		ws = new WebSocket(url);
 		
 		ws.onopen = function () {
-			console.log("ws conn opened");
-			isWsOpen = true;
+			Service.isWsOpen = true;
+			$rootScope.$broadcast("wsStatus", "open");
 		};
 
 		ws.onclose = function () {
-			console.log("ws conn closed");
-			isWsOpen = false;
+			Service.isWsOpen = false;
+			$rootScope.$broadcast("wsStatus", "close");
 		};
 
 		ws.onmessage = function (msg) {
 			$rootScope.$broadcast('wsockMsg', msg.data);
+		};
+
+		ws.onerror = function () {
+			$rootScope.$broadcast("wsStatus", "close");
 		};
 	};
 
@@ -31,10 +37,10 @@ angular.module('comm', [])
 
 	Service.send = function (msg) {
 		//check ws
-		if (isWsOpen) {
+		if (Service.isWsOpen) {
 			ws.send(msg);
 		} else {
-			console.error("[wsock] drop message = " + msg);
+			console.log("[wsock] drop message = " + msg);
 		}
 	};
 

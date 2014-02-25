@@ -1,0 +1,6 @@
+<div class="well well-sm" ng-hide="session.isReady">
+Connection : {{wsStr}}
+</div>
+<div class="well well-sm" ng-show="session.isReady">
+<strong>Connection</strong> : {{wsStr}}. <strong>Server</strong>: {{session.server}}.
+</div>

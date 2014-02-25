@@ -1,3 +1,4 @@
+<span class="alert alert-info">{{activeChan}}</span>
 <div data-ng-repeat="m in chat_hist.messages" scroll-item>
 	<div class="row" ng-show="showDate($index, chat_hist.messages)">
 		<div class="col-md-10 info" style="text-align:center;">{{m.timestamp | date:'MMMM dd'}}</div>
