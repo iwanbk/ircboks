@@ -1,3 +1,8 @@
+
+<form ng-submit="killMe()">
+	<button type="submit" class="btn btn-danger">Kill Me</button>
+</form>
+
 <ul><li><a href="#/{{activeServer}}">status</a></li></ul>
 <ul>
 	<li ng-repeat="chan in chanlist"><a href="#/{{activeServer}}/c/{{chan.encName}}">{{chan.name}}</a> <span ng-show="histdict[chan.name].unreadCount > 0" class="badge">{{histdict[chan.name].unreadCount}}</span></li>

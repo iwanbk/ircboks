@@ -10,6 +10,7 @@ angular.module('session', ['comm'])
 		isLogin: false,
 		isReady: false,
 		isNeedStart: false,
+		isKilled: false,
 
 		chathist: {}, //chat history
 		memberdict: {}, //dictionary of channel members
@@ -117,6 +118,19 @@ angular.module('session', ['comm'])
 			};
 			this.targetChannels.push(chan);
 		}
+	};
+
+	/**
+	* kill our IRC client
+	*/
+	Service.killMe = function () {
+		var msg = {
+			event: 'killMe',
+			data: {
+				userId: this.userId
+			}
+		};
+		wsock.send(JSON.stringify(msg));
 	};
 	return Service;
 }])

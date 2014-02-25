@@ -8,6 +8,10 @@ ircboksControllers.controller('targetListCtrl', ['$scope', '$rootScope', '$route
 		$scope.activeChan = $scope.activeServer;
 	}
 
+	$scope.killMe = function () {
+		console.error("kill me");
+	};
+
 	/**
 	* ask ircboks client to dump all info about the client
 	*/
