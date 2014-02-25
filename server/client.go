@@ -187,7 +187,7 @@ func (c *IRCClient) Loop(info *ClientContext) {
 		case in := <-c.inChan:
 			go c.processIrcMsg(in)
 		case evt := <-c.evtChan:
-			go c.handleIrcEvent(evt)
+			go c.handleIrcEvent(&evt)
 		}
 	}
 }
@@ -219,7 +219,7 @@ var eventsToForward = map[string]bool{
 	"QUIT":   true,
 }
 
-func (c *IRCClient) handleIrcEvent(evt ogric.Event) {
+func (c *IRCClient) handleIrcEvent(evt *ogric.Event) {
 	if eventsToIgnore[evt.Code] {
 		return
 	}
@@ -228,7 +228,7 @@ func (c *IRCClient) handleIrcEvent(evt ogric.Event) {
 		c.forwardEvent(evt)
 		return
 	}
-	fnMap := map[string]func(ogric.Event){
+	fnMap := map[string]func(*ogric.Event){
 		"001":     c.process001,
 		"PRIVMSG": c.processPrivMsg,
 		"JOIN":    c.processJoined,
@@ -244,8 +244,8 @@ func (c *IRCClient) handleIrcEvent(evt ogric.Event) {
 	}
 }
 
-//forward irc event to endpoint
-func (c *IRCClient) forwardEvent(evt ogric.Event) {
+//forwardEvent sent an IRC event to all endpoints
+func (c *IRCClient) forwardEvent(evt *ogric.Event) {
 	data := make(map[string]interface{})
 	data["message"] = evt.Message
 	data["args"] = evt.Arguments
@@ -267,7 +267,7 @@ func (c *IRCClient) forwardEvent(evt ogric.Event) {
 }
 
 //process PRIVMSG
-func (c *IRCClient) processPrivMsg(e ogric.Event) {
+func (c *IRCClient) processPrivMsg(e *ogric.Event) {
 	target := e.Arguments[0]
 	timestamp := time.Now().Unix()
 	nick := e.Nick
@@ -310,7 +310,7 @@ func insertMsgHistory(userId, target, nick, message string, timestamp int64, rea
 	return objectId
 }
 
-func (c *IRCClient) processStartNames(e ogric.Event) {
+func (c *IRCClient) processStartNames(e *ogric.Event) {
 	data := make(map[string]interface{})
 	data["channel"] = e.Arguments[2]
 	data["names"] = e.Message
@@ -328,7 +328,7 @@ func (c *IRCClient) processStartNames(e ogric.Event) {
 	EndpointPublishId(c.userId, jsStr)
 }
 
-func (c *IRCClient) processEndNames(e ogric.Event) {
+func (c *IRCClient) processEndNames(e *ogric.Event) {
 	data := make(map[string]interface{})
 	data["channel"] = e.Arguments[1]
 	data["names"] = e.Message
@@ -347,7 +347,7 @@ func (c *IRCClient) processEndNames(e ogric.Event) {
 }
 
 //process JOIN event
-func (c *IRCClient) processJoined(e ogric.Event) {
+func (c *IRCClient) processJoined(e *ogric.Event) {
 	channelName := e.Arguments[0]
 	c.chanJoinedSet[channelName] = true
 	c.forwardEvent(e)
@@ -358,7 +358,7 @@ process001 will handle 001 (IRC connected event):
 - new connection : forward this event to endpoint
 - reconnect after disconnect : rejoin channel
 */
-func (c *IRCClient) process001(e ogric.Event) {
+func (c *IRCClient) process001(e *ogric.Event) {
 	c.forwardEvent(e)
 
 	for chanName, _ := range c.chanJoinedSet {
