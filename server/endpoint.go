@@ -18,8 +18,8 @@ func EndpointPublisher() {
 	for {
 		msg := <-EndpointMsgChan
 		if msg.ClientCtx == nil {
-			ctx, err := GetClientContext(msg.UserId)
-			if err != nil {
+			ctx := ClientContextGet(msg.UserId)
+			if ctx == nil {
 				log.Error("[EndpointWriter] failed to find context for :" + msg.UserId)
 				continue
 			}

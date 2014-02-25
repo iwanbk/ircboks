@@ -143,19 +143,13 @@ func isIrcMsg(msg string) bool {
 }
 
 //handle IRC command
-func handleIrcMsg(msg, userId string, ws *websocket.Conn) error {
-	ctx, err := GetClientContext(userId)
-
-	if err != nil {
-		log.Error("Error when getting map info for = " + userId)
-		return err
-	}
+func handleIrcMsg(msg, userId string, ws *websocket.Conn) {
+	ctx := ClientContextGet(userId)
 
 	if ctx == nil {
-		log.Error("[handleIrcMsg] userContext for '" + userId + "' is nil")
-		return nil
+		log.Error("Can't find client ctx for userId = " + userId)
+		return
 	}
 
 	ctx.InChan <- msg
-	return nil
 }

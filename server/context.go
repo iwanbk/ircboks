@@ -63,11 +63,22 @@ func ClientContextRegister(userId, nick, server, user string, inChan chan string
 	return clientContextMap[userId]
 }
 
-//GetClientContext return client context object of a clientId
-func GetClientContext(clientId string) (*ClientContext, error) {
-	info, ok := clientContextMap[clientId]
+//ClientContextDel remove context for a userId
+func ClientContextDel(userId string) {
+	_, ok := clientContextMap[userId]
 	if !ok {
-		return nil, nil
+		log.Error("[ClientContextDel()] trying to del non exist ctx for user id :" + userId)
+		return
 	}
-	return info, nil
+	delete(clientContextMap, userId)
+}
+
+//ClientContextGet return client context object of a given userId
+//return nil if not found
+func ClientContextGet(clientId string) *ClientContext {
+	ctx, ok := clientContextMap[clientId]
+	if !ok {
+		return nil
+	}
+	return ctx
 }

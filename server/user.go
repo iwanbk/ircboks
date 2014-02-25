@@ -40,7 +40,7 @@ func UserLogin(msg string, ws *websocket.Conn) (string, string, bool, error) {
 	}
 
 	//check IRC client existence
-	ctx, _ := GetClientContext(userId)
+	ctx := ClientContextGet(userId)
 	if ctx == nil {
 		return userId, authTrueGenStr(false, "", "", ""), true, nil
 	}
@@ -51,8 +51,8 @@ func UserLogin(msg string, ws *websocket.Conn) (string, string, bool, error) {
 }
 
 func UserLogout(userId string, ws *websocket.Conn) {
-	ctx, err := GetClientContext(userId)
-	if err != nil {
+	ctx := ClientContextGet(userId)
+	if ctx == nil {
 		log.Error("[UserLogout]can't find = " + userId)
 		return
 	}
