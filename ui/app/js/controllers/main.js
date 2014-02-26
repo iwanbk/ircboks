@@ -153,9 +153,6 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 
 	//handler when we connected to an irc server
 	$scope.$on('001', function (event, msg) {
-		if ($scope.channel !== undefined && $scope.channel[0] == "#") {
-			$scope.ircJoin($scope.channel);
-		}
 		addToStatusPage(msg, "001");
 	});
 
@@ -174,7 +171,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 	});
 
 	$scope.$on('372', function (event, msg) {
-		addToStatusPage(msg, "002");
+		addToStatusPage(msg, "372");
 	});
 
 	$scope.$on('NOTICE', function (event, msg) {
