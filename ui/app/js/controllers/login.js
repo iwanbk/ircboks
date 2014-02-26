@@ -1,14 +1,6 @@
 ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParams',  '$location', 'wsock', 'Session',
 	function ($scope, $rootScope, $routeParams, $location, wsock, Session) {
 
-	//user details, just for convenience while in early test
-	$scope.userId = "paijo@gmail.com";
-	$scope.userPassword = "paijo";
-
-	$scope.nick = "paijon";
-	$scope.ircPassword = "";
-	$scope.user = "paijon";
-	$scope.channel = "#ircboks";
 	$scope.server = "irc.freenode.net:6667";
 
 	$scope.loginMsg = "Please Login";
