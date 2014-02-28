@@ -9,6 +9,14 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
+//User represent a user in ircboks
+type User struct {
+	Id       bson.ObjectId `bson:"_id"`
+	UserId   string        `bson:"userId"`
+	Password string        `bson:"password"`
+}
+
+//AuthInfo represent authentication info sent by user when logging in
 type AuthInfo struct {
 	Id       bson.ObjectId `bson:"_id"`
 	UserId   string        `bson:"userId" json:"userId"`

@@ -8,6 +8,18 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
+//MessageHist represent a message history
+type MessageHist struct {
+	Id        bson.ObjectId `bson:"_id"`
+	UserId    string        `bson:"userId"`
+	Target    string        `bson:"target"`
+	Nick      string        `bson:"nick"`
+	Message   string        `bson:"message"`
+	Timestamp int64         `bson:"timestamp"`
+	ReadFlag  bool          `bson:"read_flag"`
+	ToChannel bool          `bson:"to_channel"`
+}
+
 //channel history request data
 type chanHistReqData struct {
 	Channel string `json="channel"`

@@ -6,23 +6,6 @@ import (
 	"labix.org/v2/mgo/bson"
 )
 
-type MessageHist struct {
-	Id        bson.ObjectId `bson:"_id"`
-	UserId    string        `bson:"userId"`
-	Target    string        `bson:"target"`
-	Nick      string        `bson:"nick"`
-	Message   string        `bson:"message"`
-	Timestamp int64         `bson:"timestamp"`
-	ReadFlag  bool          `bson:"read_flag"`
-	ToChannel bool          `bson:"to_channel"`
-}
-
-type User struct {
-	Id       bson.ObjectId `bson:"_id"`
-	UserId   string        `bson:"userId"`
-	Password string        `bson:"password"`
-}
-
 var mgoSes *mgo.Session
 
 func getSession() (*mgo.Session, error) {
