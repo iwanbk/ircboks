@@ -43,7 +43,7 @@ func DBInsert(dbName, collectionName string, doc interface{}) error {
 func DBQueryArr(dbName, colName string, query bson.M, sortStr string, limit int, res interface{}) error {
 	sess, err := getSession()
 	if err != nil {
-		log.Error("[DBQueryArr]Can't connect to mongo, go error %v\n", err)
+		log.Error("[DBQueryArr]Can't connect to mongo. error:", err.Error())
 		return err
 	}
 	defer sess.Close()

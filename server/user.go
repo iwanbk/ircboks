@@ -174,7 +174,7 @@ func UserRegister(msg string, ws *websocket.Conn) {
 
 	sess, err := mgo.Dial(uri)
 	if err != nil {
-		log.Error("Can't connect to mongo, go error %v\n", err)
+		log.Error("Can't connect to mongo, go error :" + err.Error())
 		websocket.Message.Send(ws, `{"event":"registrationResult", "data" : {"result":"failed", "reason":"internal DB error"}}`)
 		return
 	}
@@ -185,7 +185,7 @@ func UserRegister(msg string, ws *websocket.Conn) {
 	doc := AuthInfo{bson.NewObjectId(), authInfo.UserId, hashedPass}
 	err = collection.Insert(doc)
 	if err != nil {
-		log.Error("Can't insert new user: %v\n", err)
+		log.Error("Can't insert new user:" + err.Error())
 		websocket.Message.Send(ws, `{"event":"registrationResult", "data" : {"result":"failed", "reason":"internal DB error"}}`)
 		return
 	}
