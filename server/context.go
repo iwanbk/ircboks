@@ -3,7 +3,6 @@ package main
 import (
 	"code.google.com/p/go.net/websocket"
 	log "github.com/ngmoco/timber"
-	"sync"
 )
 
 //ClientContext hold any related data about an IRC client
@@ -18,14 +17,6 @@ type ClientContext struct {
 
 	wsArr []*websocket.Conn
 }
-
-type contextMap struct {
-	sync.RWMutex
-	ctxMap map[string]*ClientContext
-}
-
-//map of all client context
-var ContextMap *contextMap
 
 func NewClientContext(userId, nick, server, user string, inChan chan string, ws *websocket.Conn) *ClientContext {
 	return &ClientContext{userId, nick, server, user, inChan, []*websocket.Conn{ws}}
@@ -54,39 +45,4 @@ func (c *ClientContext) DelWs(ws *websocket.Conn) {
 			c.wsArr = c.wsArr[:len(c.wsArr)-1]
 		}
 	}
-}
-
-func ContextMapInit() {
-	ContextMap = new(contextMap)
-	ContextMap.ctxMap = make(map[string]*ClientContext)
-}
-
-func (c *contextMap) Get(userId string) (*ClientContext, bool) {
-	c.RLock()
-	ctx, found := c.ctxMap[userId]
-	c.RUnlock()
-
-	return ctx, found
-}
-
-func (c *contextMap) Del(userId string) bool {
-	c.Lock()
-
-	_, found := c.ctxMap[userId]
-
-	if found {
-		delete(c.ctxMap, userId)
-	}
-
-	c.Unlock()
-	return found
-}
-
-func (c *contextMap) Add(userId, nick, server, user string, inChan chan string, ws *websocket.Conn) *ClientContext {
-	ctx := NewClientContext(userId, nick, server, user, inChan, ws)
-
-	c.Lock()
-	c.ctxMap[userId] = ctx
-	c.Unlock()
-	return ctx
 }
