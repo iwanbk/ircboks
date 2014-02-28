@@ -25,8 +25,8 @@ type AuthInfo struct {
 
 //AuthMsg is an authentication message from endpoint
 type AuthMsg struct {
-	Event string   `json="event"`
-	Data  AuthInfo `json="data"`
+	Event string   `json:"event"`
+	Data  AuthInfo `json:"data"`
 }
 
 //Handle login event

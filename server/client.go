@@ -11,25 +11,25 @@ import (
 )
 
 type IrcStartMsgData struct {
-	UserId   string `json="userId"`
-	Nick     string `json="nick"`
-	Password string `json="password"`
-	User     string `json="user"`
-	Channel  string `json="channel"`
-	Server   string `json="server"`
+	UserId   string `json:"userId"`
+	Nick     string `json:"nick"`
+	Password string `json:"password"`
+	User     string `json:"user"`
+	Channel  string `json:"channel"`
+	Server   string `json:"server"`
 }
 
 type IrcStartMsg struct {
-	Event string          `json="event"`
-	Data  IrcStartMsgData `json="data"`
+	Event string          `json:"event"`
+	Data  IrcStartMsgData `json:"data"`
 }
 
 type IrcJoinMsgData struct {
 }
 
 type IrcMsg struct {
-	Event string      `json="event"`
-	Data  interface{} `json="data"`
+	Event string      `json:"event"`
+	Data  interface{} `json:"data"`
 }
 
 //getData get value of a json key

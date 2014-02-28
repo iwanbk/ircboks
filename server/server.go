@@ -13,7 +13,7 @@ import (
 
 //WsMessage is websocket message from browser
 type WsMessage struct {
-	Event string `json="event"`
+	Event string `json:"event"`
 }
 
 type WsContext struct {

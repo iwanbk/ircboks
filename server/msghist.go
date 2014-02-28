@@ -22,26 +22,26 @@ type MessageHist struct {
 
 //channel history request data
 type chanHistReqData struct {
-	Channel string `json="channel"`
-	UserId  string `json="userId"`
+	Channel string `json:"channel"`
+	UserId  string `json:"userId"`
 }
 
 //channel history request
 type chanHistReq struct {
-	Event string          `json="event"`
-	Data  chanHistReqData `json="data"`
+	Event string          `json:"event"`
+	Data  chanHistReqData `json:"data"`
 }
 
 //nick history request data
 type nickHistReqData struct {
-	Nick   string `json="nick"`
-	UserId string `json="userId"`
+	Nick   string `json:"nick"`
+	UserId string `json:"userId"`
 }
 
 //nick history request
 type nickHistReq struct {
-	Event string          `json="event"`
-	Data  nickHistReqData `json="data"`
+	Event string          `json:"event"`
+	Data  nickHistReqData `json:"data"`
 }
 
 //get channel message history
@@ -120,12 +120,12 @@ func MsgHistNick(msgStr string, ws *websocket.Conn) {
 }
 
 type MsgHistMarkReadReqData struct {
-	UserId string   `json="userId"`
-	Oids   []string `json="oids"`
+	UserId string   `json:"userId"`
+	Oids   []string `json:"oids"`
 }
 type MsgHistMarkReadReq struct {
-	Event string                 `json="event"`
-	Data  MsgHistMarkReadReqData `json="data"`
+	Event string                 `json:"event"`
+	Data  MsgHistMarkReadReqData `json:"data"`
 }
 
 //MsgHistMarkRead mark messages readFlag as read
