@@ -23,9 +23,23 @@ type User struct {
 	Password string        `bson:"password"`
 }
 
+var mgoSes *mgo.Session
+
+func getSession() (*mgo.Session, error) {
+	var err error
+	if mgoSes == nil {
+		mgoSes, err = mgo.Dial(Config.GetString("mongodb_uri"))
+		if err != nil {
+			log.Error("failed to connect to mongodb :" + err.Error())
+			return nil, err
+		}
+	}
+	return mgoSes.Clone(), nil
+}
+
 //DBInsert insert a document to a collection
 func DBInsert(dbName, collectionName string, doc interface{}) error {
-	sess, err := mgo.Dial(Config.GetString("mongodb_uri"))
+	sess, err := getSession()
 	if err != nil {
 		return err
 	}
@@ -44,7 +58,7 @@ func DBInsert(dbName, collectionName string, doc interface{}) error {
 
 //DBQueryArr retrieve array of document from mongodb server
 func DBQueryArr(dbName, colName string, query bson.M, sortStr string, limit int, res interface{}) error {
-	sess, err := mgo.Dial(Config.GetString("mongodb_uri"))
+	sess, err := getSession()
 	if err != nil {
 		log.Error("[DBQueryArr]Can't connect to mongo, go error %v\n", err)
 		return err
@@ -56,7 +70,7 @@ func DBQueryArr(dbName, colName string, query bson.M, sortStr string, limit int,
 
 //DBGetOne retrieve a document from DB
 func DBGetOne(dbName, colName string, bsonM bson.M, doc interface{}) error {
-	sess, err := mgo.Dial(Config.GetString("mongodb_uri"))
+	sess, err := getSession()
 	if err != nil {
 		log.Error("[DBGetOne]failed to connect to server :" + err.Error())
 		return nil
@@ -73,7 +87,7 @@ func DBGetOne(dbName, colName string, bsonM bson.M, doc interface{}) error {
 }
 
 func DBUpdateOne(dbName, colName, oid string, updateQuery bson.M) error {
-	sess, err := mgo.Dial(Config.GetString("mongodb_uri"))
+	sess, err := getSession()
 	if err != nil {
 		log.Error("[DBUpdateOne]failed to connect to server :" + err.Error())
 		return nil
