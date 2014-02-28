@@ -134,7 +134,7 @@ func IrcStart(userId, nick, password, username, server string, ws *websocket.Con
 	}
 
 	//register client context
-	ctx := ClientContextRegister(userId, nick, server, username, inChan, ws)
+	ctx := ContextMap.Add(userId, nick, server, username, inChan, ws)
 
 	log.Debug("[IrcStart] starting ircController")
 	go client.Loop(ctx)

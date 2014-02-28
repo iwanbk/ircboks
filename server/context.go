@@ -3,6 +3,7 @@ package main
 import (
 	"code.google.com/p/go.net/websocket"
 	log "github.com/ngmoco/timber"
+	"sync"
 )
 
 //ClientContext hold any related data about an IRC client
@@ -18,13 +19,13 @@ type ClientContext struct {
 	wsArr []*websocket.Conn
 }
 
-//map of all client context
-var clientContextMap map[string]*ClientContext
-
-func InitClientContextMap() {
-	log.Debug("initClientMap")
-	clientContextMap = make(map[string]*ClientContext)
+type contextMap struct {
+	sync.RWMutex
+	ctxMap map[string]*ClientContext
 }
+
+//map of all client context
+var ContextMap *contextMap
 
 func NewClientContext(userId, nick, server, user string, inChan chan string, ws *websocket.Conn) *ClientContext {
 	return &ClientContext{userId, nick, server, user, inChan, []*websocket.Conn{ws}}
@@ -55,30 +56,37 @@ func (c *ClientContext) DelWs(ws *websocket.Conn) {
 	}
 }
 
-//ClientContextRegister add this client into client map
-//TODO : some checking to check if client already exist
-func ClientContextRegister(userId, nick, server, user string, inChan chan string, ws *websocket.Conn) *ClientContext {
-	info := NewClientContext(userId, nick, server, user, inChan, ws)
-	clientContextMap[userId] = info
-	return clientContextMap[userId]
+func ContextMapInit() {
+	ContextMap = new(contextMap)
+	ContextMap.ctxMap = make(map[string]*ClientContext)
 }
 
-//ClientContextDel remove context for a userId
-func ClientContextDel(userId string) {
-	_, ok := clientContextMap[userId]
-	if !ok {
-		log.Error("[ClientContextDel()] trying to del non exist ctx for user id :" + userId)
-		return
-	}
-	delete(clientContextMap, userId)
+func (c *contextMap) Get(userId string) (*ClientContext, bool) {
+	c.RLock()
+	ctx, found := c.ctxMap[userId]
+	c.RUnlock()
+
+	return ctx, found
 }
 
-//ClientContextGet return client context object of a given userId
-//return nil if not found
-func ClientContextGet(clientId string) *ClientContext {
-	ctx, ok := clientContextMap[clientId]
-	if !ok {
-		return nil
+func (c *contextMap) Del(userId string) bool {
+	c.Lock()
+
+	_, found := c.ctxMap[userId]
+
+	if found {
+		delete(c.ctxMap, userId)
 	}
+
+	c.Unlock()
+	return found
+}
+
+func (c *contextMap) Add(userId, nick, server, user string, inChan chan string, ws *websocket.Conn) *ClientContext {
+	ctx := NewClientContext(userId, nick, server, user, inChan, ws)
+
+	c.Lock()
+	c.ctxMap[userId] = ctx
+	c.Unlock()
 	return ctx
 }

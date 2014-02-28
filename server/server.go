@@ -37,7 +37,7 @@ func main() {
 	r.Handle("/irc/", websocket.Handler(wsMain))
 
 	log.Debug("Starting ircbox server ..")
-	InitClientContextMap()
+	ContextMapInit()
 	go EndpointPublisher()
 
 	err := http.ListenAndServe(Config.GetString("host_port"), r)
@@ -144,9 +144,9 @@ func isIrcMsg(msg string) bool {
 
 //handle IRC command
 func handleIrcMsg(msg, userId string, ws *websocket.Conn) {
-	ctx := ClientContextGet(userId)
+	ctx, found := ContextMap.Get(userId)
 
-	if ctx == nil {
+	if !found {
 		log.Error("Can't find client ctx for userId = " + userId)
 		return
 	}
