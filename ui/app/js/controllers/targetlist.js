@@ -18,9 +18,8 @@ ircboksControllers.controller('targetListCtrl', ['$scope', '$rootScope', '$route
 	$scope.askDumpInfo = function () {
 		var msg = {
 			event: 'ircBoxInfo',
-			data: {
-				userId: Session.userId
-			}
+			domain: 'irc',
+			userId: Session.userId
 		};
 		wsock.send(JSON.stringify(msg));
 	};

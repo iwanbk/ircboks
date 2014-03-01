@@ -45,7 +45,7 @@ func (c *contextMap) Del(userId string) bool {
 }
 
 //Add context
-func (c *contextMap) Add(userId, nick, server, user string, inChan chan string, ws *websocket.Conn) *ClientContext {
+func (c *contextMap) Add(userId, nick, server, user string, inChan chan *EndptMsg, ws *websocket.Conn) *ClientContext {
 	ctx := NewClientContext(userId, nick, server, user, inChan, ws)
 
 	c.Lock()

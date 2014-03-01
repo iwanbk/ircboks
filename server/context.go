@@ -13,12 +13,12 @@ type ClientContext struct {
 	Server string
 	User   string
 	//input channel
-	InChan chan string
+	InChan chan *EndptMsg
 
 	wsArr []*websocket.Conn
 }
 
-func NewClientContext(userId, nick, server, user string, inChan chan string, ws *websocket.Conn) *ClientContext {
+func NewClientContext(userId, nick, server, user string, inChan chan *EndptMsg, ws *websocket.Conn) *ClientContext {
 	return &ClientContext{userId, nick, server, user, inChan, []*websocket.Conn{ws}}
 }
 

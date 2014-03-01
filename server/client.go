@@ -2,52 +2,12 @@ package main
 
 import (
 	"code.google.com/p/go.net/websocket"
-	"encoding/json"
 	simplejson "github.com/bitly/go-simplejson"
 	"github.com/iwanbk/ogric"
 	log "github.com/ngmoco/timber"
 	"labix.org/v2/mgo/bson"
 	"time"
 )
-
-type IrcStartMsgData struct {
-	UserId   string `json:"userId"`
-	Nick     string `json:"nick"`
-	Password string `json:"password"`
-	User     string `json:"user"`
-	Channel  string `json:"channel"`
-	Server   string `json:"server"`
-}
-
-type IrcStartMsg struct {
-	Event string          `json:"event"`
-	Data  IrcStartMsgData `json:"data"`
-}
-
-type IrcJoinMsgData struct {
-}
-
-type IrcMsg struct {
-	Event string      `json:"event"`
-	Data  interface{} `json:"data"`
-}
-
-//getData get value of a json key
-//TODO optimization
-func (msg *IrcMsg) getData(key string) string {
-	m := msg.Data.(map[string]interface{})
-	for k, v := range m {
-		switch vv := v.(type) {
-		case string:
-			if k == key {
-				return vv
-			}
-		default:
-
-		}
-	}
-	return ""
-}
 
 type IRCClient struct {
 	userId   string
@@ -61,14 +21,14 @@ type IRCClient struct {
 	//event channel
 	evtChan chan ogric.Event
 
-	//input & output channel
-	inChan chan string
+	//input channel
+	inChan chan *EndptMsg
 
 	//channel  joined
 	chanJoinedSet map[string]bool
 }
 
-func NewIRCClient(userId, nick, password, user, server string, inChan chan string) (*IRCClient, error) {
+func NewIRCClient(userId, nick, password, user, server string, inChan chan *EndptMsg) (*IRCClient, error) {
 	c := new(IRCClient)
 	c.userId = userId
 	c.nick = nick
@@ -124,7 +84,7 @@ func IrcStart(userId, nick, password, username, server string, ws *websocket.Con
 	log.Debug("[IrcStart. userId=" + userId + ". Nick = " + nick + ". Username = " + username + ". Server = " + server)
 
 	//initialize IRC client
-	inChan := make(chan string)
+	inChan := make(chan *EndptMsg)
 	client, _ := NewIRCClient(userId, nick, password, username, server, inChan)
 
 	log.Debug("[IrcStart]starting irc client")
@@ -143,40 +103,32 @@ func IrcStart(userId, nick, password, username, server string, ws *websocket.Con
 }
 
 //processIrcMsg will unmarshal irc command json string and dispatch it to respective handler
-func (client *IRCClient) processIrcMsg(msgStr string) {
-	log.Debug("[processIrcMsg] msg = " + msgStr)
-	ircMsg := IrcMsg{}
-	err := json.Unmarshal([]byte(msgStr), &ircMsg)
-	if err != nil {
-		log.Error("[processIrcMsg]failed to unmarshal json = " + err.Error())
-		return
-	}
-
-	if ircMsg.Data == nil {
-		log.Error("[processIrcMsg]nil data")
-		return
-	}
-
-	switch ircMsg.Event {
+func (client *IRCClient) processIrcMsg(em *EndptMsg) {
+	//log.Debug("[processIrcMsg] msg = " + msgStr)
+	switch em.Event {
 	case "ircJoin":
-		log.Debug("ircJoin = " + ircMsg.getData("channel"))
-		channel := ircMsg.getData("channel")
-		client.client.Join(channel)
+		if channel, ok := em.GetDataString("channel"); ok {
+			client.client.Join(channel)
+		}
 	case "ircPrivMsg":
-		target := ircMsg.getData("target")
-		message := ircMsg.getData("message")
-		//send message
+		target, _ := em.GetDataString("target")
+		message, _ := em.GetDataString("message")
+		if len(target) == 0 && len(message) == 0 {
+			return
+		}
 		client.client.Privmsg(target, message)
 		//save message
 		timestamp := time.Now().Unix()
 		insertMsgHistory(client.userId, target, client.nick, message, timestamp, true)
 	case "ircBoxInfo":
 		info := client.dumpInfo()
-		EndpointPublishId(client.userId, info)
+		EndpointPublishID(em.UserID, info)
 	case "ircNames":
-		client.client.Names(ircMsg.getData("channel"))
+		if channel, ok := em.GetDataString("channel"); ok {
+			client.client.Names(channel)
+		}
 	default:
-		log.Debug("Unknown command:" + ircMsg.Event)
+		log.Debug("Unknown command:" + em.Event)
 	}
 }
 
@@ -263,7 +215,7 @@ func (c *IRCClient) forwardEvent(evt *ogric.Event) {
 		return
 	}
 
-	EndpointPublishId(c.userId, jsStr)
+	EndpointPublishID(c.userId, jsStr)
 }
 
 //process PRIVMSG
@@ -290,7 +242,7 @@ func (c *IRCClient) processPrivMsg(e *ogric.Event) {
 		log.Error("[processPrivMsg]failed to marshal json:" + err.Error())
 		return
 	}
-	EndpointPublishId(c.userId, jsStr)
+	EndpointPublishID(c.userId, jsStr)
 }
 
 //insertMsgHistory save a message to DB
@@ -325,7 +277,7 @@ func (c *IRCClient) processStartNames(e *ogric.Event) {
 		return
 	}
 
-	EndpointPublishId(c.userId, jsStr)
+	EndpointPublishID(c.userId, jsStr)
 }
 
 func (c *IRCClient) processEndNames(e *ogric.Event) {
@@ -343,7 +295,7 @@ func (c *IRCClient) processEndNames(e *ogric.Event) {
 		return
 	}
 
-	EndpointPublishId(c.userId, jsStr)
+	EndpointPublishID(c.userId, jsStr)
 }
 
 //process JOIN event

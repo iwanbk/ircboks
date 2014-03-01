@@ -45,10 +45,9 @@ angular.module('msghist', ['comm', 'session'])
 		}
 		var msg = {
 			event: 'msghistMarkRead',
-			data: {
-				userId: Session.userId,
-				oids: oidArr
-			}
+			userId: Session.userId,
+			domain: 'boks',
+			args: oidArr
 		};
 		this.histdict[target].unreadCount = 0;
 		wsock.send(JSON.stringify(msg));
@@ -58,10 +57,9 @@ angular.module('msghist', ['comm', 'session'])
 		var oidArr = [oid];
 		var msg = {
 			event: 'msghistMarkRead',
-			data: {
-				userId: Session.userId,
-				oids: oidArr
-			}
+			userId: Session.userId,
+			domain: 'boks',
+			args: oidArr
 		};
 		wsock.send(JSON.stringify(msg));
 	};
@@ -96,8 +94,9 @@ angular.module('msghist', ['comm', 'session'])
 		console.log("askNickLog " + nick);
 		var msg = {
 			event: 'msghistNickReq',
+			userId: Session.userId,
+			domain: 'boks',
 			data: {
-				userId: Session.userId,
 				nick: nick
 			}
 		};
@@ -109,8 +108,9 @@ angular.module('msghist', ['comm', 'session'])
 		console.log("ask chan log = " + channame);
 		var msg = {
 			event: 'msghistChannel',
+			userId: Session.userId,
+			domain: 'boks',
 			data: {
-				userId: Session.userId,
 				channel:channame
 			}
 		};

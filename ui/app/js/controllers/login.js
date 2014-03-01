@@ -48,11 +48,11 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 		console.log("starting ircboks client");
 		var msg = {
 			'event': 'clientStart',
+			userId: Session.userId,
+			domain: 'boks',
 			'data': {
-				userId: Session.userId,
 				nick: $scope.nick,
 				user: $scope.user,
-				channel: $scope.channel,
 				server: $scope.server,
 				password: $scope.ircPassword
 			}

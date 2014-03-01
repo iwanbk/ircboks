@@ -3,7 +3,6 @@ package main
 
 import (
 	"code.google.com/p/go.net/websocket"
-	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	log "github.com/ngmoco/timber"
@@ -67,15 +66,15 @@ func wsMain(ws *websocket.Conn) {
 		wsMsg, err := NewEndptMsgFromStr(msg)
 
 		if err != nil {
-			log.Fatal("[wsMain]failed to unmarshal json :" + err.Error())
+			log.Error("[wsMain]failed to unmarshal json :" + err.Error())
 			continue
 		}
 		wsCtx.UserId = wsMsg.UserID
 
 		if wsMsg.Domain == "irc" && wsCtx.LoggedIn {
-			handleIrcMsg(msg, wsCtx.UserId, ws)
+			handleIrcMsg(wsMsg, ws)
 		} else {
-			handleBoxMsg(wsCtx, wsMsg, msg)
+			handleBoxMsg(wsCtx, wsMsg)
 		}
 	}
 
@@ -86,15 +85,15 @@ func wsMain(ws *websocket.Conn) {
 }
 
 //handle IRCBoks message
-func handleBoxMsg(wsCtx *WsContext, e *EndptMsg, msg string) {
+func handleBoxMsg(wsCtx *WsContext, em *EndptMsg) {
 	resp := "{}"
-	if e.Event == "login" {
-		resp, isLoginOK, _ := UserLogin(e, wsCtx.Ws)
+	if em.Event == "login" {
+		resp, isLoginOK, _ := UserLogin(em, wsCtx.Ws)
 		wsCtx.LoggedIn = isLoginOK
 		websocket.Message.Send(wsCtx.Ws, resp)
 		return
-	} else if e.Event == "userRegister" {
-		UserRegister(e, wsCtx.Ws)
+	} else if em.Event == "userRegister" {
+		UserRegister(em, wsCtx.Ws)
 		return
 	}
 
@@ -103,52 +102,46 @@ func handleBoxMsg(wsCtx *WsContext, e *EndptMsg, msg string) {
 		websocket.Message.Send(wsCtx.Ws, resp)
 	}
 
-	switch e.Event {
+	switch em.Event {
 	case "clientStart":
-		resp, _ = handleClientStart(msg, wsCtx.Ws)
+		resp, _ = handleClientStart(em, wsCtx.Ws)
 		websocket.Message.Send(wsCtx.Ws, resp)
 	case "msghistChannel":
-		go MsgHistChannel(msg, wsCtx.Ws)
+		go MsgHistChannel(em, wsCtx.Ws)
 	case "msghistNickReq":
-		go MsgHistNick(msg, wsCtx.Ws)
+		go MsgHistNick(em, wsCtx.Ws)
 	case "msghistMarkRead":
-		go MsgHistMarkRead(msg)
+		go MsgHistMarkRead(em)
 	default:
-		log.Error("Unhandled event = " + e.Event)
+		log.Error("Unhandled event = " + em.Event)
 	}
 }
 
 //handle userStart command from browser
-func handleClientStart(msgStr string, ws *websocket.Conn) (string, error) {
-	msg := IrcStartMsg{}
-	err := json.Unmarshal([]byte(msgStr), &msg)
-	if err != nil {
-		log.Error("[handleIrcStart]failed to unmarshal = " + err.Error())
-		return "", err
-	}
+func handleClientStart(em *EndptMsg, ws *websocket.Conn) (string, error) {
+	nick, _ := em.GetDataString("nick")
+	server, _ := em.GetDataString("server")
+	user, _ := em.GetDataString("user")
+	password, _ := em.GetDataString("password")
+	userID := em.UserID
 	//check parameter
-	if len(msg.Data.UserId) == 0 || len(msg.Data.Nick) == 0 || len(msg.Data.Server) == 0 || len(msg.Data.User) == 0 {
+	if len(nick) == 0 || len(server) == 0 || len(user) == 0 {
 		log.Error("empty clientId / nick / server / username")
 		return `{"event":"clientStartResult", "data":{"result":"false", "reason":"invalidArgument"}}`, nil
 	}
-	IrcStart(msg.Data.UserId, msg.Data.Nick, msg.Data.Password, msg.Data.User, msg.Data.Server, ws)
+	IrcStart(userID, nick, password, user, server, ws)
 
 	return `{"event":"clientStartResult", "data":{"result":"true"}}`, nil
 }
 
-//check if a message is an IRC command message
-func isIrcMsg(msg string) bool {
-	return msg[:3] == "irc"
-}
-
 //handle IRC command
-func handleIrcMsg(msg, userId string, ws *websocket.Conn) {
-	ctx, found := ContextMap.Get(userId)
+func handleIrcMsg(em *EndptMsg, ws *websocket.Conn) {
+	ctx, found := ContextMap.Get(em.UserID)
 
 	if !found {
-		log.Error("Can't find client ctx for userId = " + userId)
+		log.Error("Can't find client ctx for userId = " + em.UserID)
 		return
 	}
 
-	ctx.InChan <- msg
+	ctx.InChan <- em
 }

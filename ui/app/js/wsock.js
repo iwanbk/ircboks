@@ -29,7 +29,6 @@ angular.module('comm', [])
 	};
 
 	$rootScope.$on('wsockMsg', function (event, msg) {
-		console.log('wsockMsg = ' + msg);
 		var data = JSON.parse(msg);
 		//TODO : check event
 		$rootScope.$broadcast(data.event, data.data);
@@ -38,6 +37,7 @@ angular.module('comm', [])
 	Service.send = function (msg) {
 		//check ws
 		if (Service.isWsOpen) {
+			console.log("sending message = " + msg);
 			ws.send(msg);
 		} else {
 			console.log("[wsock] drop message = " + msg);

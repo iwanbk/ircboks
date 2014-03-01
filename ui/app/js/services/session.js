@@ -24,7 +24,7 @@ angular.module('session', ['comm'])
 	Service.initMember = function (channel) {
 		if (this.memberdict[channel] === undefined) {
 			this.memberdict[channel] = new Members(channel);
-			askChannelNames(channel);
+			this.askChannelNames(channel);
 		}
 	};
 	//addMember add nick as a member of a channel
@@ -67,14 +67,15 @@ angular.module('session', ['comm'])
 	/**
 	* send NAMES command for a channel
 	*/
-	var askChannelNames = function (channel) {
+	Service.askChannelNames = function (channel) {
 		if (channel[0] != "#") {
 			return;
 		}
 		var msg = {
 			event:"ircNames",
+			userId: Session.userId,
+			domain: 'irc',
 			data: {
-				userId: this.userId,
 				channel: channel
 			}
 		};
@@ -126,9 +127,8 @@ angular.module('session', ['comm'])
 	Service.killMe = function () {
 		var msg = {
 			event: 'killMe',
-			data: {
-				userId: this.userId
-			}
+			domain: 'boks',
+			userId: this.userId
 		};
 		wsock.send(JSON.stringify(msg));
 	};

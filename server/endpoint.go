@@ -5,22 +5,22 @@ import (
 	log "github.com/ngmoco/timber"
 )
 
-type EndpointMsg struct {
+type endpointMsg struct {
 	Msg       string
-	UserId    string
+	UserID    string
 	ClientCtx *ClientContext
 }
 
-var EndpointMsgChan = make(chan *EndpointMsg, 10)
+var endpointMsgChan = make(chan *endpointMsg, 10)
 
-//EndpointWriter write message to all endpoint
+//EndpointPublisher is
 func EndpointPublisher() {
 	for {
-		msg := <-EndpointMsgChan
+		msg := <-endpointMsgChan
 		if msg.ClientCtx == nil {
-			ctx, found := ContextMap.Get(msg.UserId)
+			ctx, found := ContextMap.Get(msg.UserID)
 			if !found {
-				log.Error("[EndpointWriter] failed to find context for :" + msg.UserId)
+				log.Error("[EndpointWriter] failed to find context for :" + msg.UserID)
 				continue
 			}
 			msg.ClientCtx = ctx
@@ -32,20 +32,23 @@ func EndpointPublisher() {
 	}
 }
 
+//EndpointPublishCtx publish message to all endpoint with same context
 func EndpointPublishCtx(ctx *ClientContext, msg string) {
-	m := new(EndpointMsg)
+	m := new(endpointMsg)
 	m.Msg = msg
 	m.ClientCtx = ctx
-	EndpointMsgChan <- m
+	endpointMsgChan <- m
 }
 
-func EndpointPublishId(userId string, msg string) {
-	m := new(EndpointMsg)
+//EndpointPublishID publish message to all endpoint of a userID
+func EndpointPublishID(userID string, msg string) {
+	m := new(endpointMsg)
 	m.Msg = msg
-	m.UserId = userId
-	EndpointMsgChan <- m
+	m.UserID = userID
+	endpointMsgChan <- m
 }
 
+//EndpointSend send message to an endpoint
 func EndpointSend(ws *websocket.Conn, msg string) {
 	go websocket.Message.Send(ws, msg)
 }
