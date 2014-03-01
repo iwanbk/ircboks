@@ -13,8 +13,9 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 	$scope.login = function () {
 		var msg = {
 			'event': 'login',
+			'domain': 'boks',
+			'userId': $scope.userId,
 			'data': {
-				'userId': $scope.userId,
 				'password': $scope.userPassword
 			}
 		};
@@ -31,8 +32,9 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 		}
 		var msg = {
 			event: 'userRegister',
+			domain: 'boks',
+			userId: $scope.newUserId,
 			data: {
-				userId: $scope.newUserId,
 				password: $scope.newUserPassword1
 			}
 		};

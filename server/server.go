@@ -94,7 +94,7 @@ func handleBoxMsg(wsCtx *WsContext, e *EndptMsg, msg string) {
 		websocket.Message.Send(wsCtx.Ws, resp)
 		return
 	} else if e.Event == "userRegister" {
-		UserRegister(msg, wsCtx.Ws)
+		UserRegister(e, wsCtx.Ws)
 		return
 	}
 

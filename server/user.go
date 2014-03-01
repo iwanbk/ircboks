@@ -3,34 +3,27 @@ package main
 import (
 	"code.google.com/p/go.crypto/bcrypt"
 	"code.google.com/p/go.net/websocket"
-	"encoding/json"
 	log "github.com/ngmoco/timber"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 )
 
-//User represent a user in ircboks
-type User struct {
-	Id       bson.ObjectId `bson:"_id"`
-	UserId   string        `bson:"userId"`
-	Password string        `bson:"password"`
-}
-
 //AuthInfo represent authentication info sent by user when logging in
 type AuthInfo struct {
-	Id       bson.ObjectId `bson:"_id"`
-	UserId   string        `bson:"userId" json:"userId"`
+	ID       bson.ObjectId `bson:"_id"`
+	UserID   string        `bson:"userId" json:"userId"`
 	Password string        `bson:"password" json:"password"`
 }
 
-//AuthMsg is an authentication message from endpoint
-type AuthMsg struct {
-	Event string   `json:"event"`
-	Data  AuthInfo `json:"data"`
+//User represent a user in ircboks
+type User struct {
+	ID       bson.ObjectId `bson:"_id"`
+	UserID   string        `bson:"userId"`
+	Password string        `bson:"password"`
 }
 
-//Handle login event
-//return :
+//UserLogin handle login message from endpoint.
+//It check user passwod and return following infos:
 //	- resp
 //	- login result
 // - err
@@ -63,24 +56,14 @@ func UserLogin(e *EndptMsg, ws *websocket.Conn) (string, bool, error) {
 	return authTrueGenStr(true, ctx.Nick, ctx.Server, ctx.User), true, nil
 }
 
-func UserLogout(userId string, ws *websocket.Conn) {
-	ctx, found := ContextMap.Get(userId)
+//UserLogout will log out the user
+func UserLogout(userID string, ws *websocket.Conn) {
+	ctx, found := ContextMap.Get(userID)
 	if !found {
-		log.Error("[UserLogout]can't find = " + userId)
+		log.Error("[UserLogout]can't find = " + userID)
 		return
 	}
 	ctx.DelWs(ws)
-}
-
-//parseAuthMsg parse authentication message into AuthInfo
-func parseAuthMsg(msg string) (AuthInfo, error) {
-	authMsg := AuthMsg{}
-
-	err := json.Unmarshal([]byte(msg), &authMsg)
-	if err != nil {
-		return authMsg.Data, err
-	}
-	return authMsg.Data, nil
 }
 
 //Check auth
@@ -131,27 +114,32 @@ func authTrueGenStr(clientExist bool, nick, server, user string) string {
 }
 
 //check if user already exist
-func isUserExist(userId string) bool {
+func isUserExist(userID string) bool {
 	var user User
-	b := bson.M{"userId": userId}
+	b := bson.M{"userId": userID}
 	err := DBGetOne("ircboks", "user", b, &user)
 	return (err == nil)
 }
 
-//User Registration
-func UserRegister(msg string, ws *websocket.Conn) {
-	authInfo, _ := parseAuthMsg(msg)
+//UserRegister handle user registration
+func UserRegister(e *EndptMsg, ws *websocket.Conn) {
+	userID := e.UserID
+	password, ok := e.GetDataString("password")
+	if !ok {
+		websocket.Message.Send(ws, `{"event":"registrationResult", "data" : {"result":"failed", "reason":null password"}}`)
+		return
+	}
 
 	//check if user already exist
-	if isUserExist(authInfo.UserId) {
-		log.Info("[registerUser]User '" + authInfo.UserId + "' already registered")
+	if isUserExist(userID) {
+		log.Info("[registerUser]User '" + userID + "' already registered")
 		websocket.Message.Send(ws, `{"event":"registrationResult", "data" : {"result":"failed", "reason":"email address already registered"}}`)
 		return
 	}
 
-	log.Info("[registerUser] registering " + authInfo.UserId)
+	log.Info("[registerUser] registering " + userID)
 
-	hashedPass, err := authHassPassword(authInfo.Password)
+	hashedPass, err := authHassPassword(password)
 	if err != nil {
 		log.Error("[RegisterUser]:failed to hass password : " + err.Error())
 		websocket.Message.Send(ws, `{"event":"registrationResult", "data" : {"result":"failed", "reason":"internal error"}}`)
@@ -177,7 +165,7 @@ func UserRegister(msg string, ws *websocket.Conn) {
 
 	sess.SetSafe(&mgo.Safe{})
 	collection := sess.DB("ircboks").C("user")
-	doc := AuthInfo{bson.NewObjectId(), authInfo.UserId, hashedPass}
+	doc := AuthInfo{bson.NewObjectId(), userID, hashedPass}
 	err = collection.Insert(doc)
 	if err != nil {
 		log.Error("Can't insert new user:" + err.Error())
