@@ -10,24 +10,20 @@ import (
 	"net/http"
 )
 
-//WsMessage is websocket message from browser
-type WsMessage struct {
-	Event string `json:"event"`
-}
-
-type WsContext struct {
-	UserId   string
+type wsContext struct {
+	UserID   string
 	LoggedIn bool
 	Ws       *websocket.Conn
 }
 
-func NewWSContext(ws *websocket.Conn) *WsContext {
-	w := new(WsContext)
+func newWSContext(ws *websocket.Conn) *wsContext {
+	w := new(wsContext)
 	w.Ws = ws
 	w.LoggedIn = false
 	return w
 }
 
+//Config is this application configuration
 var Config = jconfig.LoadConfig("config.json")
 
 func main() {
@@ -50,7 +46,7 @@ func main() {
 func wsMain(ws *websocket.Conn) {
 	defer ws.Close()
 
-	wsCtx := NewWSContext(ws)
+	wsCtx := newWSContext(ws)
 
 	var msg string
 	for {
@@ -69,7 +65,7 @@ func wsMain(ws *websocket.Conn) {
 			log.Error("[wsMain]failed to unmarshal json :" + err.Error())
 			continue
 		}
-		wsCtx.UserId = wsMsg.UserID
+		wsCtx.UserID = wsMsg.UserID
 
 		if wsMsg.Domain == "irc" && wsCtx.LoggedIn {
 			handleIrcMsg(wsMsg, ws)
@@ -79,13 +75,13 @@ func wsMain(ws *websocket.Conn) {
 	}
 
 	if wsCtx.LoggedIn {
-		UserLogout(wsCtx.UserId, ws)
+		UserLogout(wsCtx.UserID, ws)
 	}
 	log.Debug("[wsMain]endpoint exited")
 }
 
 //handle IRCBoks message
-func handleBoxMsg(wsCtx *WsContext, em *EndptMsg) {
+func handleBoxMsg(wsCtx *wsContext, em *EndptMsg) {
 	resp := "{}"
 	if em.Event == "login" {
 		resp, isLoginOK, _ := UserLogin(em, wsCtx.Ws)
