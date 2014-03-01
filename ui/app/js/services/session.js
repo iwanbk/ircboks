@@ -73,7 +73,7 @@ angular.module('session', ['comm'])
 		}
 		var msg = {
 			event:"ircNames",
-			userId: Session.userId,
+			userId: this.userId,
 			domain: 'irc',
 			data: {
 				channel: channel
