@@ -31,31 +31,36 @@ type AuthMsg struct {
 
 //Handle login event
 //return :
-//	- userId
 //	- resp
 //	- login result
 // - err
-func UserLogin(msg string, ws *websocket.Conn) (string, string, bool, error) {
+func UserLogin(e *EndptMsg, ws *websocket.Conn) (string, bool, error) {
+	userID := e.UserID
+	password, ok := e.GetDataString("password")
+	if !ok {
+		log.Info("[UserLogin]null password.userID = " + userID)
+		return "", false, nil
+	}
 	//do login
-	userId, result, err := checkAuth(msg)
+	result, err := checkAuth(userID, password)
 
 	if err != nil {
-		return "", authFalseGenStr("error"), true, nil
+		return authFalseGenStr("error"), true, nil
 	}
 
 	if result == false {
-		return "", authFalseGenStr("loginFailed"), true, nil
+		return authFalseGenStr("loginFailed"), true, nil
 	}
 
 	//check IRC client existence
-	ctx, found := ContextMap.Get(userId)
+	ctx, found := ContextMap.Get(userID)
 	if !found {
-		return userId, authTrueGenStr(false, "", "", ""), true, nil
+		return authTrueGenStr(false, "", "", ""), true, nil
 	}
 
 	//update client context
 	ctx.AddWs(ws)
-	return userId, authTrueGenStr(true, ctx.Nick, ctx.Server, ctx.User), true, nil
+	return authTrueGenStr(true, ctx.Nick, ctx.Server, ctx.User), true, nil
 }
 
 func UserLogout(userId string, ws *websocket.Conn) {
@@ -80,28 +85,18 @@ func parseAuthMsg(msg string) (AuthInfo, error) {
 
 //Check auth
 //return userId and auth result
-func checkAuth(authStr string) (string, bool, error) {
-	//parse input
-	authInfo, err := parseAuthMsg(authStr)
-	if err != nil {
-		return "", false, err
-	}
-
-	//check input
-	if len(authInfo.UserId) == 0 || len(authInfo.Password) == 0 {
-		return "", false, nil
-	}
+func checkAuth(userID, password string) (bool, error) {
 	//get user from db
 	var user User
-	bsonM := bson.M{"userId": authInfo.UserId}
-	err = DBGetOne("ircboks", "user", bsonM, &user)
+	bsonM := bson.M{"userId": userID}
+	err := DBGetOne("ircboks", "user", bsonM, &user)
 	if err != nil {
-		log.Info("[checkAuth] user " + authInfo.UserId + " not found")
-		return "", false, err
+		log.Info("[checkAuth] user " + userID + " not found")
+		return false, err
 	}
 
 	//check password
-	return authInfo.UserId, authComparePassword(user.Password, authInfo.Password), nil
+	return authComparePassword(user.Password, password), nil
 }
 
 func authFalseGenStr(reason string) string {

@@ -64,18 +64,18 @@ func wsMain(ws *websocket.Conn) {
 		log.Debug("[wsMain]endpoint's msg = " + msg)
 
 		//parse message
-		wsMsg := WsMessage{}
+		wsMsg, err := NewEndptMsgFromStr(msg)
 
-		err = json.Unmarshal([]byte(msg), &wsMsg)
 		if err != nil {
-			log.Error("[wsMain]failed to unmarshal json.Ignore it")
+			log.Fatal("[wsMain]failed to unmarshal json :" + err.Error())
 			continue
 		}
+		wsCtx.UserId = wsMsg.UserID
 
-		if isIrcMsg(wsMsg.Event) && wsCtx.LoggedIn {
+		if wsMsg.Domain == "irc" && wsCtx.LoggedIn {
 			handleIrcMsg(msg, wsCtx.UserId, ws)
 		} else {
-			handleBoxMsg(wsCtx, wsMsg.Event, msg)
+			handleBoxMsg(wsCtx, wsMsg, msg)
 		}
 	}
 
@@ -86,15 +86,14 @@ func wsMain(ws *websocket.Conn) {
 }
 
 //handle IRCBoks message
-func handleBoxMsg(wsCtx *WsContext, event, msg string) {
+func handleBoxMsg(wsCtx *WsContext, e *EndptMsg, msg string) {
 	resp := "{}"
-	if event == "login" {
-		userId, resp, isLoginOK, _ := UserLogin(msg, wsCtx.Ws)
-		wsCtx.UserId = userId
+	if e.Event == "login" {
+		resp, isLoginOK, _ := UserLogin(e, wsCtx.Ws)
 		wsCtx.LoggedIn = isLoginOK
 		websocket.Message.Send(wsCtx.Ws, resp)
 		return
-	} else if event == "userRegister" {
+	} else if e.Event == "userRegister" {
 		UserRegister(msg, wsCtx.Ws)
 		return
 	}
@@ -104,7 +103,7 @@ func handleBoxMsg(wsCtx *WsContext, event, msg string) {
 		websocket.Message.Send(wsCtx.Ws, resp)
 	}
 
-	switch event {
+	switch e.Event {
 	case "clientStart":
 		resp, _ = handleClientStart(msg, wsCtx.Ws)
 		websocket.Message.Send(wsCtx.Ws, resp)
@@ -115,7 +114,7 @@ func handleBoxMsg(wsCtx *WsContext, event, msg string) {
 	case "msghistMarkRead":
 		go MsgHistMarkRead(msg)
 	default:
-		log.Error("Unhandled event = " + event)
+		log.Error("Unhandled event = " + e.Event)
 	}
 }
 
