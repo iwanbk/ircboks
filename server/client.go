@@ -119,7 +119,7 @@ func (client *IRCClient) processIrcMsg(em *EndptMsg) {
 		client.client.Privmsg(target, message)
 		//save message
 		timestamp := time.Now().Unix()
-		insertMsgHistory(client.userId, target, client.nick, message, timestamp, true)
+		insertMsgHistory(client.userId, target, client.nick, message, timestamp, true, false)
 	case "ircBoxInfo":
 		info := client.dumpInfo()
 		EndpointPublishID(em.UserID, info)
@@ -233,7 +233,7 @@ func (c *IRCClient) processPrivMsg(e *ogric.Event) {
 	m["readFlag"] = false
 
 	//save this message to DB
-	oid := insertMsgHistory(c.userId, target, nick, message, timestamp, false)
+	oid := insertMsgHistory(c.userId, target, nick, message, timestamp, false, true)
 	m["oid"] = oid
 
 	//send this message to endpoint
@@ -246,14 +246,14 @@ func (c *IRCClient) processPrivMsg(e *ogric.Event) {
 }
 
 //insertMsgHistory save a message to DB
-func insertMsgHistory(userId, target, nick, message string, timestamp int64, readFlag bool) bson.ObjectId {
+func insertMsgHistory(userId, target, nick, message string, timestamp int64, readFlag, incoming bool) bson.ObjectId {
 	objectId := bson.NewObjectId()
 	go func() {
 		toChannel := false
 		if string(target[0]) == "#" {
 			toChannel = true
 		}
-		doc := MessageHist{objectId, userId, target, nick, message, timestamp, readFlag, toChannel}
+		doc := MessageHist{objectId, userId, target, nick, message, timestamp, readFlag, toChannel, incoming}
 		err := DBInsert("ircboks", "msghist", &doc)
 		if err != nil {
 			log.Error("[insertMsgHistory] failed : " + err.Error())

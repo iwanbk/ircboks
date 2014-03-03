@@ -51,6 +51,16 @@ func DBQueryArr(dbName, colName string, query bson.M, sortStr string, limit int,
 	return sess.DB(dbName).C(colName).Find(query).Sort(sortStr).Limit(limit).All(res)
 }
 
+func DBSelectDistinct(dbName, colName string, query bson.M, distinctBy string, res interface{}) error {
+	sess, err := getSession()
+	if err != nil {
+		log.Error("[DBSelectDistinct]Error getSession:", err.Error())
+		return err
+	}
+	defer sess.Close()
+	return sess.DB(dbName).C(colName).Find(query).Distinct(distinctBy, res)
+}
+
 //DBGetOne retrieve a document from DB
 func DBGetOne(dbName, colName string, bsonM bson.M, doc interface{}) error {
 	sess, err := getSession()
@@ -69,6 +79,7 @@ func DBGetOne(dbName, colName string, bsonM bson.M, doc interface{}) error {
 	return nil
 }
 
+//DBUpdateOne update a doc
 func DBUpdateOne(dbName, colName, oid string, updateQuery bson.M) error {
 	sess, err := getSession()
 	if err != nil {

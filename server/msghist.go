@@ -9,14 +9,15 @@ import (
 
 //MessageHist represent a message history
 type MessageHist struct {
-	Id        bson.ObjectId `bson:"_id"`
-	UserId    string        `bson:"userId"`
-	Target    string        `bson:"target"`
-	Nick      string        `bson:"nick"`
-	Message   string        `bson:"message"`
-	Timestamp int64         `bson:"timestamp"`
-	ReadFlag  bool          `bson:"read_flag"`
-	ToChannel bool          `bson:"to_channel"`
+	ID        bson.ObjectId `bson:"_id" json:"Id"`
+	UserID    string        `bson:"userId" json:"UserId"`
+	Target    string        `bson:"target"`     //message target/receiver
+	Nick      string        `bson:"nick"`       //sender's nick
+	Message   string        `bson:"message"`    //message content
+	Timestamp int64         `bson:"timestamp"`  //server timestamp
+	ReadFlag  bool          `bson:"read_flag"`  //true if this message already read by user
+	ToChannel bool          `bson:"to_channel"` //true if it is message to channel
+	Incoming  bool          `bson:"incoming"`   //true if it is incoming message
 }
 
 //MsgHistChannel get message history of a channel
@@ -60,11 +61,15 @@ func MsgHistNick(em *EndptMsg, ws *websocket.Conn) {
 		log.Error("MsgHistNick() empty nick")
 		return
 	}
+	msgHistNick(em.UserID, nick, ws)
+}
+
+func msgHistNick(userID, nick string, ws *websocket.Conn) {
 	//get data from DB
 	var hists []MessageHist
 
-	query1 := bson.M{"userId": em.UserID, "nick": nick, "to_channel": false} //message from this nick, not in channel
-	query2 := bson.M{"userId": em.UserID, "target": nick}                    //message to this nick
+	query1 := bson.M{"userId": userID, "nick": nick, "to_channel": false} //message from this nick, not in channel
+	query2 := bson.M{"userId": userID, "target": nick}                    //message to this nick
 
 	query := bson.M{"$or": []bson.M{query1, query2}}
 	err := DBQueryArr("ircboks", "msghist", query, "-timestamp", 50, &hists)
@@ -87,6 +92,21 @@ func MsgHistNick(em *EndptMsg, ws *websocket.Conn) {
 
 	//send it back
 	websocket.Message.Send(ws, jsStr)
+}
+
+//MsgHistNicksUnread get all unread messages that is not from channel
+func MsgHistNicksUnread(em *EndptMsg, ws *websocket.Conn) {
+	var unreadNicks []string
+	query := bson.M{"userId": em.UserID, "to_channel": false, "incoming": true}
+	if err := DBSelectDistinct("ircboks", "msghist", query, "nick", &unreadNicks); err != nil {
+		log.Error("MsgHistNicksUnread:selecr distinct err :" + err.Error())
+		return
+	}
+
+	for _, nick := range unreadNicks {
+		log.Info("message hist for = " + nick)
+		msgHistNick(em.UserID, nick, ws)
+	}
 }
 
 //MsgHistMarkRead mark messages readFlag as read

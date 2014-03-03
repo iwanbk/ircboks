@@ -132,6 +132,19 @@ angular.module('session', ['comm'])
 		};
 		wsock.send(JSON.stringify(msg));
 	};
+
+	Service.askNicksUnread = function () {
+		var msg = {
+			event : "msghistNicksUnread",
+			domain: "boks",
+			userId: this.userId
+		};
+		wsock.send(JSON.stringify(msg));
+	};
+	$rootScope.$on("endpointReady", function () {
+		console.log("endpointReady");
+		Service.askNicksUnread();
+	});
 	return Service;
 }])
 ;

@@ -29,9 +29,10 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 	* Message history of a nick
 	*/
 	$scope.$on("msghistNickResp", function (event, msg) {
-		if (msg.logs === undefined || msg.logs === null) {//empty logs
+		if (msg.logs === undefined || msg.logs === null || msg.logs.length == 0) {//empty logs
 			return;
 		}
+		Session.addTarget(msg.nick);
 		for (i = 0; i <  msg.logs.length; i++) {
 			var obj = msg.logs[i];
 			var readFlag = obj.ReadFlag;

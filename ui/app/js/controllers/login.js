@@ -86,6 +86,7 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 				Session.isReady = true; 
 
 				$scope.toChatPage();
+				$rootScope.$broadcast("endpointReady");
 			} else {
 				Session.isNeedStart = true;
 				$scope.isNeedStart = true;
@@ -117,6 +118,7 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 			Session.isNeedStart = false;
 			Session.isReady = true;
 			$scope.toChatPage();
+			$rootScope.$broadcast("endpointReady");
 		} else {
 			console.error("unhandled event = clientStartResult false");
 		}

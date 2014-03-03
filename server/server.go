@@ -108,6 +108,8 @@ func handleBoxMsg(wsCtx *wsContext, em *EndptMsg) {
 		go MsgHistNick(em, wsCtx.Ws)
 	case "msghistMarkRead":
 		go MsgHistMarkRead(em)
+	case "msghistNicksUnread":
+		go MsgHistNicksUnread(em, wsCtx.Ws)
 	default:
 		log.Error("Unhandled event = " + em.Event)
 	}
