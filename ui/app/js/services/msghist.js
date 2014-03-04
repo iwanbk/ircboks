@@ -49,8 +49,8 @@ angular.module('msghist', ['comm', 'session'])
 			domain: 'boks',
 			args: oidArr
 		};
-		this.histdict[target].unreadCount = 0;
 		wsock.send(JSON.stringify(msg));
+		this.histdict[target].setReadOidArr(oidArr);
 	};
 
 	Service.markAsRead = function (oid) {
@@ -62,6 +62,7 @@ angular.module('msghist', ['comm', 'session'])
 			args: oidArr
 		};
 		wsock.send(JSON.stringify(msg));
+		this.histdict[target].setReadOidArr(oidArr);
 	};
 
 	/**

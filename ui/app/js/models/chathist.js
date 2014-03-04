@@ -66,6 +66,27 @@
 			}
 			return oidArr;
 		};
+		/**
+		* Set messages with oid in oidArr as read
+		*/
+		chathist.prototype.setReadOidArr = function (oidArr) {
+			for (var i = 0; i < oidArr.length; i++) {
+				var msg = this.getMessageByOid(oidArr[i]);
+				if (msg !== null) {
+					msg.readFlag = true;
+					this.unreadCount -= 1;
+				}
+			}
+		};
+
+		chathist.prototype.getMessageByOid = function (oid) {
+			for (i = 0; i < this.messages.length; i++) {
+				if (this.messages[i].oid == oid) {
+					return this.messages[i];
+				}
+			}
+			return null;
+		};
 
 		return chathist;
 	})();
