@@ -122,3 +122,18 @@ func MsgHistMarkRead(em *EndptMsg) {
 		DBUpdateOne("ircboks", "msghist", oid, updQuery)
 	}
 }
+
+//MsgHistInsert save a message to DB
+func MsgHistInsert(userID, target, nick, message string, timestamp int64, readFlag, incoming bool) bson.ObjectId {
+	objectId := bson.NewObjectId()
+	toChannel := false
+	if string(target[0]) == "#" {
+		toChannel = true
+	}
+	doc := MessageHist{objectId, userID, target, nick, message, timestamp, readFlag, toChannel, incoming}
+	err := DBInsert("ircboks", "msghist", &doc)
+	if err != nil {
+		log.Error("[insertMsgHistory] failed : " + err.Error())
+	}
+	return objectId
+}

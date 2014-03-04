@@ -5,7 +5,6 @@ import (
 	simplejson "github.com/bitly/go-simplejson"
 	"github.com/iwanbk/ogric"
 	log "github.com/ngmoco/timber"
-	"labix.org/v2/mgo/bson"
 	"time"
 )
 
@@ -119,7 +118,7 @@ func (client *IRCClient) processIrcMsg(em *EndptMsg) {
 		client.client.Privmsg(target, message)
 		//save message
 		timestamp := time.Now().Unix()
-		insertMsgHistory(client.userId, target, client.nick, message, timestamp, true, false)
+		MsgHistInsert(client.userId, target, client.nick, message, timestamp, true, false)
 	case "ircBoxInfo":
 		info := client.dumpInfo()
 		EndpointPublishID(em.UserID, info)
@@ -233,7 +232,7 @@ func (c *IRCClient) processPrivMsg(e *ogric.Event) {
 	m["readFlag"] = false
 
 	//save this message to DB
-	oid := insertMsgHistory(c.userId, target, nick, message, timestamp, false, true)
+	oid := MsgHistInsert(c.userId, target, nick, message, timestamp, false, true)
 	m["oid"] = oid
 
 	//send this message to endpoint
@@ -243,23 +242,6 @@ func (c *IRCClient) processPrivMsg(e *ogric.Event) {
 		return
 	}
 	EndpointPublishID(c.userId, jsStr)
-}
-
-//insertMsgHistory save a message to DB
-func insertMsgHistory(userId, target, nick, message string, timestamp int64, readFlag, incoming bool) bson.ObjectId {
-	objectId := bson.NewObjectId()
-	go func() {
-		toChannel := false
-		if string(target[0]) == "#" {
-			toChannel = true
-		}
-		doc := MessageHist{objectId, userId, target, nick, message, timestamp, readFlag, toChannel, incoming}
-		err := DBInsert("ircboks", "msghist", &doc)
-		if err != nil {
-			log.Error("[insertMsgHistory] failed : " + err.Error())
-		}
-	}()
-	return objectId
 }
 
 func (c *IRCClient) processStartNames(e *ogric.Event) {
