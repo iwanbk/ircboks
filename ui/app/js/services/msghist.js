@@ -21,7 +21,6 @@ angular.module('msghist', ['comm', 'session'])
 		}
 		if (this.histdict[target].isHistAsked() === false) {
 			this.askChatHist(target);
-			this.histdict[target].setHistAsked();
 		}
 	};
 
@@ -53,7 +52,7 @@ angular.module('msghist', ['comm', 'session'])
 		this.histdict[target].setReadOidArr(oidArr);
 	};
 
-	Service.markAsRead = function (oid) {
+	Service.markAsRead = function (target, oid) {
 		var oidArr = [oid];
 		var msg = {
 			event: 'msghistMarkRead',
@@ -91,6 +90,7 @@ angular.module('msghist', ['comm', 'session'])
 			Service.askNickLog(target);
 		}
 	};
+	
 	Service.askNickLog = function (nick) {
 		console.log("askNickLog " + nick);
 		var msg = {
@@ -102,6 +102,7 @@ angular.module('msghist', ['comm', 'session'])
 			}
 		};
 		wsock.send(JSON.stringify(msg));
+		this.histdict[nick].setHistAsked();
 	};
 
 	//Ask for channel logs/history
@@ -116,7 +117,17 @@ angular.module('msghist', ['comm', 'session'])
 			}
 		};
 		wsock.send(JSON.stringify(msg));
+		this.histdict[channame].setHistAsked();
 	};
+
+	$rootScope.$on("msghistNicksUnread", function (event, msg) {
+		if (msg.nicks === undefined || msg.nicks === null) {
+			return;
+		}
+		for (var i = 0; i < msg.nicks.length; i++) {
+			Service.askNickLog(msg.nicks[i]);
+		}
+	});
 
 	return Service;
 }])

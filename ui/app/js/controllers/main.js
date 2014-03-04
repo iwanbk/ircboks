@@ -45,7 +45,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 			MsgHistService.addNewMsgFront(msg.nick, message);
 
 			if (readFlag === true && obj.ReadFlag === false) {
-				MsgHistService.markAsRead(obj.Id);
+				MsgHistService.markAsRead(msg.nick, obj.Id);
 			}
 		}
 		$scope.$apply();
@@ -70,7 +70,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 			MsgHistService.addNewMsgFront(msg.channel, message);
 
 			if (readFlag === true && obj.ReadFlag === false) {
-				MsgHistService.markAsRead(obj.Id);
+				MsgHistService.markAsRead(obj.Target, obj.Id);
 			}
 		}
 		$scope.$apply();
@@ -101,7 +101,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		$scope.$apply();
 
 		if (readFlag === true && msg.readFlag === false) {
-			MsgHistService.markAsRead(msg.oid);
+			MsgHistService.markAsRead(tabName, msg.oid);
 		}
 	});
 

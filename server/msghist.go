@@ -83,9 +83,7 @@ func msgHistNick(userID, nick string, ws *websocket.Conn) {
 	m["logs"] = hists
 	m["nick"] = nick
 
-	event := "msghistNickResp"
-
-	jsStr, err := jsonMarshal(event, m)
+	jsStr, err := jsonMarshal("msghistNickResp", m)
 	if err != nil {
 		log.Error("[MsgHistNick] failed to marshalling json = " + err.Error())
 	}
@@ -103,10 +101,15 @@ func MsgHistNicksUnread(em *EndptMsg, ws *websocket.Conn) {
 		return
 	}
 
-	for _, nick := range unreadNicks {
-		log.Info("message hist for = " + nick)
-		msgHistNick(em.UserID, nick, ws)
+	m := make(map[string]interface{})
+	m["nicks"] = unreadNicks
+
+	jsStr, err := jsonMarshal("msghistNicksUnread", m)
+	if err != nil {
+		log.Error("MsgHistNicksUnread() failed to marshal json = " + err.Error())
+		return
 	}
+	websocket.Message.Send(ws, jsStr)
 }
 
 //MsgHistMarkRead mark messages readFlag as read
