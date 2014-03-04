@@ -20,6 +20,7 @@ angular.module('comm', [])
 		};
 
 		ws.onmessage = function (msg) {
+			console.log("[wsock]onmessage = " + msg.data);
 			$rootScope.$broadcast('wsockMsg', msg.data);
 		};
 
