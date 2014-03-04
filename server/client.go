@@ -330,3 +330,13 @@ func clientStart(userID, nick, password, username, server string, ws *websocket.
 
 	return nil
 }
+
+//ClientDoIRCCmd receive IRC command and run it
+func ClientDoIRCCmd(em *EndptMsg, ws *websocket.Conn) {
+	ctx, found := ContextMap.Get(em.UserID)
+	if !found {
+		log.Error("Can't find client ctx for userId = " + em.UserID)
+		return
+	}
+	ctx.InChan <- em
+}

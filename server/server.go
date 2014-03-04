@@ -68,7 +68,7 @@ func wsMain(ws *websocket.Conn) {
 		wsCtx.UserID = wsMsg.UserID
 
 		if wsMsg.Domain == "irc" && wsCtx.LoggedIn {
-			handleIrcMsg(wsMsg, ws)
+			ClientDoIRCCmd(wsMsg, ws)
 		} else {
 			dispatchBoksHandler(wsCtx, wsMsg)
 		}
@@ -111,14 +111,4 @@ func dispatchBoksHandler(wsCtx *wsContext, em *EndptMsg) {
 	} else {
 		log.Error("dispatchBoksHandler() unhandled event:" + em.Event)
 	}
-}
-
-//handle IRC command
-func handleIrcMsg(em *EndptMsg, ws *websocket.Conn) {
-	ctx, found := ContextMap.Get(em.UserID)
-	if !found {
-		log.Error("Can't find client ctx for userId = " + em.UserID)
-		return
-	}
-	ctx.InChan <- em
 }
