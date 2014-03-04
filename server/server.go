@@ -81,7 +81,7 @@ func wsMain(ws *websocket.Conn) {
 }
 
 var boksHandlers = map[string]func(*EndptMsg, *websocket.Conn){
-	"clientStart":        handleClientStart,
+	"clientStart":        ClientCreate,
 	"msghistChannel":     MsgHistChannel,
 	"msghistNickReq":     MsgHistNick,
 	"msghistMarkRead":    MsgHistMarkRead,
@@ -111,27 +111,6 @@ func dispatchBoksHandler(wsCtx *wsContext, em *EndptMsg) {
 	} else {
 		log.Error("dispatchBoksHandler() unhandled event:" + em.Event)
 	}
-}
-
-//handle userStart command from browser
-func handleClientStart(em *EndptMsg, ws *websocket.Conn) {
-	nick, _ := em.GetDataString("nick")
-	server, _ := em.GetDataString("server")
-	user, _ := em.GetDataString("user")
-	password, _ := em.GetDataString("password")
-	userID := em.UserID
-	//check parameter
-	if len(nick) == 0 || len(server) == 0 || len(user) == 0 {
-		log.Error("empty clientId / nick / server / username")
-		resp := `{"event":"clientStartResult", "data":{"result":"false", "reason":"invalidArgument"}}`
-		websocket.Message.Send(ws, resp)
-		return
-	}
-	IrcStart(userID, nick, password, user, server, ws)
-
-	resp := `{"event":"clientStartResult", "data":{"result":"true"}}`
-	websocket.Message.Send(ws, resp)
-	return
 }
 
 //handle IRC command

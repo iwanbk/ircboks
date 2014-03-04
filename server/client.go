@@ -8,8 +8,9 @@ import (
 	"time"
 )
 
+//IRCClient represents an IRCBoks IRC client
 type IRCClient struct {
-	userId   string
+	userID   string
 	nick     string
 	password string
 	user     string
@@ -27,16 +28,46 @@ type IRCClient struct {
 	chanJoinedSet map[string]bool
 }
 
-func NewIRCClient(userId, nick, password, user, server string, inChan chan *EndptMsg) (*IRCClient, error) {
+//IRC events that will be ignored
+//We dont really need these. We put it here for clarity
+var eventsToIgnore = map[string]bool{
+	"250":  true, //RPL_STATSCONN
+	"251":  true, //RPL_LUSERCLIENT
+	"252":  true, //RPL_LUSEROP
+	"253":  true, //RPL_LUSERUNKNOWN
+	"254":  true, //RPL_LUSERCHANNELS
+	"255":  true, //RPL_LUSERME
+	"265":  true, //RPL_LOCALUSERS
+	"266":  true, //RPL_GLOBALUSER
+	"PING": true,
+	"PONG": true,
+	"MODE": true,
+}
+
+//IRC events that will be forwarded to user without any processing
+var eventsToForward = map[string]bool{
+	"002":    true,
+	"003":    true,
+	"004":    true,
+	"005":    true,
+	"372":    true, //RPL_MOTD
+	"375":    true, //RPL_MOTDSTART
+	"376":    true, //RPL_ENDOFMOTD
+	"NOTICE": true,
+	"PART":   true,
+	"QUIT":   true,
+}
+
+//NewIRCClient construct a new IRC client
+func NewIRCClient(userID, nick, password, user, server string, inChan chan *EndptMsg) (*IRCClient, error) {
 	c := new(IRCClient)
-	c.userId = userId
+	c.userID = userID
 	c.nick = nick
 	c.password = password
 	c.user = user
 	c.server = server
 	c.inChan = inChan
 
-	//c.conn = irc.IRC(nick, user)
 	c.client = ogric.NewOgric(nick, user, server)
 	c.client.Password = password
 
@@ -45,6 +76,7 @@ func NewIRCClient(userId, nick, password, user, server string, inChan chan *Endp
 	return c, nil
 }
 
+//Start start ircboks irc client and return error if any
 func (c *IRCClient) Start() error {
 	evtChan, err := c.client.Start()
 	c.evtChan = evtChan
@@ -78,36 +110,13 @@ func (c *IRCClient) dumpInfo() string {
 	return jsStr
 }
 
-//start an IRC client
-func IrcStart(userId, nick, password, username, server string, ws *websocket.Conn) (*ClientContext, error) {
-	log.Debug("[IrcStart. userId=" + userId + ". Nick = " + nick + ". Username = " + username + ". Server = " + server)
-
-	//initialize IRC client
-	inChan := make(chan *EndptMsg)
-	client, _ := NewIRCClient(userId, nick, password, username, server, inChan)
-
-	log.Debug("[IrcStart]starting irc client")
-	err := client.Start()
-	if err != nil {
-		return nil, err
-	}
-
-	//register client context
-	ctx := ContextMap.Add(userId, nick, server, username, inChan, ws)
-
-	log.Debug("[IrcStart] starting ircController")
-	go client.Loop(ctx)
-
-	return ctx, nil
-}
-
 //processIrcMsg will unmarshal irc command json string and dispatch it to respective handler
-func (client *IRCClient) processIrcMsg(em *EndptMsg) {
+func (c *IRCClient) processIrcMsg(em *EndptMsg) {
 	//log.Debug("[processIrcMsg] msg = " + msgStr)
 	switch em.Event {
 	case "ircJoin":
 		if channel, ok := em.GetDataString("channel"); ok {
-			client.client.Join(channel)
+			c.client.Join(channel)
 		}
 	case "ircPrivMsg":
 		target, _ := em.GetDataString("target")
@@ -115,23 +124,23 @@ func (client *IRCClient) processIrcMsg(em *EndptMsg) {
 		if len(target) == 0 && len(message) == 0 {
 			return
 		}
-		client.client.Privmsg(target, message)
+		c.client.Privmsg(target, message)
 		//save message
 		timestamp := time.Now().Unix()
-		MsgHistInsert(client.userId, target, client.nick, message, timestamp, true, false)
+		MsgHistInsert(c.userID, target, c.nick, message, timestamp, true, false)
 	case "ircBoxInfo":
-		info := client.dumpInfo()
+		info := c.dumpInfo()
 		EndpointPublishID(em.UserID, info)
 	case "ircNames":
 		if channel, ok := em.GetDataString("channel"); ok {
-			client.client.Names(channel)
+			c.client.Names(channel)
 		}
 	default:
 		log.Debug("Unknown command:" + em.Event)
 	}
 }
 
-//ircController goroutine handle all message to/from irc client
+//Loop handle all messages to/from irc client
 func (c *IRCClient) Loop(info *ClientContext) {
 	for {
 		select {
@@ -141,33 +150,6 @@ func (c *IRCClient) Loop(info *ClientContext) {
 			go c.handleIrcEvent(&evt)
 		}
 	}
-}
-
-var eventsToIgnore = map[string]bool{
-	"250":  true, //RPL_STATSCONN
-	"251":  true, //RPL_LUSERCLIENT
-	"252":  true, //RPL_LUSEROP
-	"253":  true, //RPL_LUSERUNKNOWN
-	"254":  true, //RPL_LUSERCHANNELS
-	"255":  true, //RPL_LUSERME
-	"265":  true, //RPL_LOCALUSERS
-	"266":  true, //RPL_GLOBALUSER
-	"PING": true,
-	"PONG": true,
-	"MODE": true,
-}
-
-var eventsToForward = map[string]bool{
-	"002":    true,
-	"003":    true,
-	"004":    true,
-	"005":    true,
-	"372":    true, //RPL_MOTD
-	"375":    true, //RPL_MOTDSTART
-	"376":    true, //RPL_ENDOFMOTD
-	"NOTICE": true,
-	"PART":   true,
-	"QUIT":   true,
 }
 
 func (c *IRCClient) handleIrcEvent(evt *ogric.Event) {
@@ -191,7 +173,7 @@ func (c *IRCClient) handleIrcEvent(evt *ogric.Event) {
 	if ok {
 		fn(evt)
 	} else {
-		log.Info("Unhandled event = " + evt.Code)
+		log.Info("handleIrcEvent() unhandled event = " + evt.Code)
 	}
 }
 
@@ -214,7 +196,7 @@ func (c *IRCClient) forwardEvent(evt *ogric.Event) {
 		return
 	}
 
-	EndpointPublishID(c.userId, jsStr)
+	EndpointPublishID(c.userID, jsStr)
 }
 
 //process PRIVMSG
@@ -232,7 +214,7 @@ func (c *IRCClient) processPrivMsg(e *ogric.Event) {
 	m["readFlag"] = false
 
 	//save this message to DB
-	oid := MsgHistInsert(c.userId, target, nick, message, timestamp, false, true)
+	oid := MsgHistInsert(c.userID, target, nick, message, timestamp, false, true)
 	m["oid"] = oid
 
 	//send this message to endpoint
@@ -241,7 +223,7 @@ func (c *IRCClient) processPrivMsg(e *ogric.Event) {
 		log.Error("[processPrivMsg]failed to marshal json:" + err.Error())
 		return
 	}
-	EndpointPublishID(c.userId, jsStr)
+	EndpointPublishID(c.userID, jsStr)
 }
 
 func (c *IRCClient) processStartNames(e *ogric.Event) {
@@ -259,7 +241,7 @@ func (c *IRCClient) processStartNames(e *ogric.Event) {
 		return
 	}
 
-	EndpointPublishID(c.userId, jsStr)
+	EndpointPublishID(c.userID, jsStr)
 }
 
 func (c *IRCClient) processEndNames(e *ogric.Event) {
@@ -277,7 +259,7 @@ func (c *IRCClient) processEndNames(e *ogric.Event) {
 		return
 	}
 
-	EndpointPublishID(c.userId, jsStr)
+	EndpointPublishID(c.userID, jsStr)
 }
 
 //process JOIN event
@@ -295,8 +277,56 @@ process001 will handle 001 (IRC connected event):
 func (c *IRCClient) process001(e *ogric.Event) {
 	c.forwardEvent(e)
 
-	for chanName, _ := range c.chanJoinedSet {
+	for chanName := range c.chanJoinedSet {
 		c.client.Join(chanName)
 		delete(c.chanJoinedSet, chanName)
 	}
+}
+
+//ClientCreate create ircboks IRC client and start it
+func ClientCreate(em *EndptMsg, ws *websocket.Conn) {
+	var resp string
+	nick, _ := em.GetDataString("nick")
+	server, _ := em.GetDataString("server")
+	user, _ := em.GetDataString("user")
+	password, _ := em.GetDataString("password")
+	userID := em.UserID
+	//check parameter
+	if len(nick) == 0 || len(server) == 0 || len(user) == 0 {
+		log.Error("empty clientId / nick / server / username")
+		resp = `{"event":"clientStartResult", "data":{"result":"false", "reason":"invalidArgument"}}`
+		websocket.Message.Send(ws, resp)
+		return
+	}
+
+	if err := clientStart(userID, nick, password, user, server, ws); err != nil {
+		resp = `{"event":"clientStartResult", "data":{"result":"false"}}`
+	} else {
+		resp = `{"event":"clientStartResult", "data":{"result":"true"}}`
+	}
+	websocket.Message.Send(ws, resp)
+}
+
+func clientStart(userID, nick, password, username, server string, ws *websocket.Conn) error {
+	log.Debug("clientStart(). userId=" + userID + ". Nick = " + nick + ". Username = " + username + ". Server = " + server)
+
+	//create IRC client
+	inChan := make(chan *EndptMsg)
+	client, err := NewIRCClient(userID, nick, password, username, server, inChan)
+	if err != nil {
+		return err
+	}
+
+	//start IRC client
+	if err = client.Start(); err != nil {
+		return err
+	}
+
+	//add client context
+	ctx := ContextMap.Add(userID, nick, server, username, inChan, ws)
+
+	//start client loop
+	go client.Loop(ctx)
+
+	return nil
 }
