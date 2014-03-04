@@ -114,7 +114,7 @@ func MsgHistNicksUnread(em *EndptMsg, ws *websocket.Conn) {
 }
 
 //MsgHistMarkRead mark messages readFlag as read
-func MsgHistMarkRead(em *EndptMsg) {
+func MsgHistMarkRead(em *EndptMsg, ws *websocket.Conn) {
 	oids := em.Args
 	if len(oids) == 0 {
 		log.Error("MsgHistMarkRead() empty oids")

@@ -70,7 +70,7 @@ func wsMain(ws *websocket.Conn) {
 		if wsMsg.Domain == "irc" && wsCtx.LoggedIn {
 			handleIrcMsg(wsMsg, ws)
 		} else {
-			handleBoxMsg(wsCtx, wsMsg)
+			dispatchBoksHandler(wsCtx, wsMsg)
 		}
 	}
 
@@ -80,8 +80,16 @@ func wsMain(ws *websocket.Conn) {
 	log.Debug("[wsMain]endpoint exited")
 }
 
+var boksHandlers = map[string]func(*EndptMsg, *websocket.Conn){
+	"clientStart":        handleClientStart,
+	"msghistChannel":     MsgHistChannel,
+	"msghistNickReq":     MsgHistNick,
+	"msghistMarkRead":    MsgHistMarkRead,
+	"msghistNicksUnread": MsgHistNicksUnread,
+}
+
 //handle IRCBoks message
-func handleBoxMsg(wsCtx *wsContext, em *EndptMsg) {
+func dispatchBoksHandler(wsCtx *wsContext, em *EndptMsg) {
 	resp := "{}"
 	if em.Event == "login" {
 		resp, isLoginOK, _ := UserLogin(em, wsCtx.Ws)
@@ -98,19 +106,10 @@ func handleBoxMsg(wsCtx *wsContext, em *EndptMsg) {
 		websocket.Message.Send(wsCtx.Ws, resp)
 	}
 
-	switch em.Event {
-	case "clientStart":
-		handleClientStart(em, wsCtx.Ws)
-	case "msghistChannel":
-		go MsgHistChannel(em, wsCtx.Ws)
-	case "msghistNickReq":
-		go MsgHistNick(em, wsCtx.Ws)
-	case "msghistMarkRead":
-		go MsgHistMarkRead(em)
-	case "msghistNicksUnread":
-		go MsgHistNicksUnread(em, wsCtx.Ws)
-	default:
-		log.Error("Unhandled event = " + em.Event)
+	if fn, ok := boksHandlers[em.Event]; ok {
+		go fn(em, wsCtx.Ws)
+	} else {
+		log.Error("dispatchBoksHandler() unhandled event:" + em.Event)
 	}
 }
 
@@ -138,11 +137,9 @@ func handleClientStart(em *EndptMsg, ws *websocket.Conn) {
 //handle IRC command
 func handleIrcMsg(em *EndptMsg, ws *websocket.Conn) {
 	ctx, found := ContextMap.Get(em.UserID)
-
 	if !found {
 		log.Error("Can't find client ctx for userId = " + em.UserID)
 		return
 	}
-
 	ctx.InChan <- em
 }
