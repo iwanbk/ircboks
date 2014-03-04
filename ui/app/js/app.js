@@ -1,5 +1,3 @@
-'use strict';
-
 var ircboksApp = angular.module('ircboksApp', [
 	'ngRoute',
 	'ircboksControllers'

@@ -1,0 +1,12 @@
+{
+    "name": "ircboks",
+    "description": "Web Based IRC Client with Persistent Connection",
+    "repository": "https://github.com/iwanbk/ircboks",
+    "devDependencies": {
+        "grunt": "~0.4.1",
+        "grunt-contrib-concat": "~0.3.0",
+        "grunt-contrib-jshint": "~0.7.1",
+        "grunt-contrib-uglify": "~0.2.0",
+        "grunt-contrib-copy": "~0.5.0"
+  }
+}
