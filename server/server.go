@@ -100,8 +100,7 @@ func handleBoxMsg(wsCtx *wsContext, em *EndptMsg) {
 
 	switch em.Event {
 	case "clientStart":
-		resp, _ = handleClientStart(em, wsCtx.Ws)
-		websocket.Message.Send(wsCtx.Ws, resp)
+		handleClientStart(em, wsCtx.Ws)
 	case "msghistChannel":
 		go MsgHistChannel(em, wsCtx.Ws)
 	case "msghistNickReq":
@@ -116,7 +115,7 @@ func handleBoxMsg(wsCtx *wsContext, em *EndptMsg) {
 }
 
 //handle userStart command from browser
-func handleClientStart(em *EndptMsg, ws *websocket.Conn) (string, error) {
+func handleClientStart(em *EndptMsg, ws *websocket.Conn) {
 	nick, _ := em.GetDataString("nick")
 	server, _ := em.GetDataString("server")
 	user, _ := em.GetDataString("user")
@@ -125,11 +124,15 @@ func handleClientStart(em *EndptMsg, ws *websocket.Conn) (string, error) {
 	//check parameter
 	if len(nick) == 0 || len(server) == 0 || len(user) == 0 {
 		log.Error("empty clientId / nick / server / username")
-		return `{"event":"clientStartResult", "data":{"result":"false", "reason":"invalidArgument"}}`, nil
+		resp := `{"event":"clientStartResult", "data":{"result":"false", "reason":"invalidArgument"}}`
+		websocket.Message.Send(ws, resp)
+		return
 	}
 	IrcStart(userID, nick, password, user, server, ws)
 
-	return `{"event":"clientStartResult", "data":{"result":"true"}}`, nil
+	resp := `{"event":"clientStartResult", "data":{"result":"true"}}`
+	websocket.Message.Send(ws, resp)
+	return
 }
 
 //handle IRC command
