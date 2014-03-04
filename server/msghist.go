@@ -95,7 +95,8 @@ func msgHistNick(userID, nick string, ws *websocket.Conn) {
 //MsgHistNicksUnread get all unread messages that is not from channel
 func MsgHistNicksUnread(em *EndptMsg, ws *websocket.Conn) {
 	var unreadNicks []string
-	query := bson.M{"userId": em.UserID, "to_channel": false, "incoming": true}
+
+	query := bson.M{"userId": em.UserID, "to_channel": false, "incoming": true, "read_flag": false}
 	if err := DBSelectDistinct("ircboks", "msghist", query, "nick", &unreadNicks); err != nil {
 		log.Error("MsgHistNicksUnread:selecr distinct err :" + err.Error())
 		return

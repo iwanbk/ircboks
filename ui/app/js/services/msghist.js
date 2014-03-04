@@ -90,7 +90,7 @@ angular.module('msghist', ['comm', 'session'])
 			Service.askNickLog(target);
 		}
 	};
-	
+
 	Service.askNickLog = function (nick) {
 		console.log("askNickLog " + nick);
 		var msg = {
@@ -125,7 +125,7 @@ angular.module('msghist', ['comm', 'session'])
 			return;
 		}
 		for (var i = 0; i < msg.nicks.length; i++) {
-			Service.askNickLog(msg.nicks[i]);
+			Service.checkInit(msg.nicks[i]);
 		}
 	});
 
