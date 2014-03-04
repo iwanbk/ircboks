@@ -145,6 +145,12 @@ angular.module('session', ['comm'])
 		console.log("endpointReady");
 		Service.askNicksUnread();
 	});
+
+	$rootScope.$on("ircClientDestroyed", function () {
+		Service.isLogin = false;
+		Service.isReady = false;
+		Service.isNeedStart = false;
+	});
 	return Service;
 }])
 ;

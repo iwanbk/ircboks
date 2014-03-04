@@ -25,6 +25,10 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		chat_hist.lastScrollPos = $('#chat').scrollTop();
 	});
 
+	$rootScope.$on("ircClientDestroyed", function () {
+		$location.path("/");
+		$scope.$apply();
+	});
 	/**
 	* Message history of a nick
 	*/

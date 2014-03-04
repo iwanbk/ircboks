@@ -24,6 +24,7 @@ type IRCClient struct {
 	//input channel
 	inChan chan *EndptMsg
 
+	stopChan chan bool
 	//channel  joined
 	chanJoinedSet map[string]bool
 }
@@ -67,6 +68,7 @@ func NewIRCClient(userID, nick, password, user, server string, inChan chan *Endp
 	c.user = user
 	c.server = server
 	c.inChan = inChan
+	c.stopChan = make(chan bool)
 
 	c.client = ogric.NewOgric(nick, user, server)
 	c.client.Password = password
@@ -112,7 +114,6 @@ func (c *IRCClient) dumpInfo() string {
 
 //processIrcMsg will unmarshal irc command json string and dispatch it to respective handler
 func (c *IRCClient) processIrcMsg(em *EndptMsg) {
-	//log.Debug("[processIrcMsg] msg = " + msgStr)
 	switch em.Event {
 	case "ircJoin":
 		if channel, ok := em.GetDataString("channel"); ok {
@@ -135,6 +136,11 @@ func (c *IRCClient) processIrcMsg(em *EndptMsg) {
 		if channel, ok := em.GetDataString("channel"); ok {
 			c.client.Names(channel)
 		}
+	case "killMe":
+		c.client.Stop()
+		go func() {
+			c.stopChan <- true
+		}()
 	default:
 		log.Debug("Unknown command:" + em.Event)
 	}
@@ -142,14 +148,18 @@ func (c *IRCClient) processIrcMsg(em *EndptMsg) {
 
 //Loop handle all messages to/from irc client
 func (c *IRCClient) Loop(info *ClientContext) {
-	for {
+	stopped := false
+	for !stopped {
 		select {
 		case in := <-c.inChan:
 			go c.processIrcMsg(in)
 		case evt := <-c.evtChan:
 			go c.handleIrcEvent(&evt)
+		case <-c.stopChan:
+			stopped = true
 		}
 	}
+	log.Info("IRCClient.Loop for " + c.userID + " exited")
 }
 
 func (c *IRCClient) handleIrcEvent(evt *ogric.Event) {
@@ -339,4 +349,23 @@ func ClientDoIRCCmd(em *EndptMsg, ws *websocket.Conn) {
 		return
 	}
 	ctx.InChan <- em
+}
+
+//ClientDestroy kill the client
+func ClientDestroy(em *EndptMsg, ws *websocket.Conn) {
+	ctx, found := ContextMap.Get(em.UserID)
+	if !found {
+		log.Error("Can't find client ctx for userId = " + em.UserID)
+		return
+	}
+	ctx.InChan <- em
+
+	ContextMap.Del(em.UserID)
+
+	em = &EndptMsg{"ircClientDestroyed", "", "", nil, nil, ""}
+	jsonStr, err := em.MarshalJson()
+	if err != nil {
+		log.Error("ClientDestroy()failed to marshal json = " + err.Error())
+	}
+	websocket.Message.Send(ws, jsonStr)
 }

@@ -15,6 +15,7 @@ type EndptMsg struct {
 	Raw    string
 }
 
+//NewEndptMsgFromStr create new EndptMsg object
 func NewEndptMsgFromStr(jsonStr string) (*EndptMsg, error) {
 	e := EndptMsg{}
 	err := json.Unmarshal([]byte(jsonStr), &e)
@@ -28,16 +29,7 @@ func NewEndptMsgFromStr(jsonStr string) (*EndptMsg, error) {
 	return &e, nil
 }
 
-func (e *EndptMsg) GetUserID() (string, bool) {
-	if len(e.UserID) > 0 {
-		return e.UserID, true
-	}
-	if userID, ok := e.Data["userId"]; ok {
-		return userID.(string), true
-	}
-	return "", false
-}
-
+//GetData retrieve data of a given key
 func (e *EndptMsg) GetData(key string) (interface{}, bool) {
 	if val, ok := e.Data[key]; ok {
 		return val, ok
@@ -45,10 +37,20 @@ func (e *EndptMsg) GetData(key string) (interface{}, bool) {
 	return nil, false
 }
 
+//GetDataString get data as string
 func (e *EndptMsg) GetDataString(key string) (string, bool) {
 	if val, ok := e.GetData(key); ok {
 		return val.(string), ok
 	}
 	return "", false
 
+}
+
+//MarshalJson marshal this object into json string
+func (e *EndptMsg) MarshalJson() (string, error) {
+	b, err := json.Marshal(e)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }

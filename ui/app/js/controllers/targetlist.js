@@ -9,7 +9,7 @@ ircboksControllers.controller('targetListCtrl', ['$scope', '$rootScope', '$route
 	}
 
 	$scope.killMe = function () {
-		console.error("kill me");
+		Session.killMe();
 	};
 
 	/**

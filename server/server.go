@@ -82,6 +82,7 @@ func wsMain(ws *websocket.Conn) {
 
 var boksHandlers = map[string]func(*EndptMsg, *websocket.Conn){
 	"clientStart":        ClientCreate,
+	"killMe":             ClientDestroy,
 	"msghistChannel":     MsgHistChannel,
 	"msghistNickReq":     MsgHistNick,
 	"msghistMarkRead":    MsgHistMarkRead,
