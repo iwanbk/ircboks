@@ -8,9 +8,7 @@ ircboksControllers.controller('MemberListCtrl', ['$scope', '$rootScope', '$route
 	}
 
 	$scope.$on("$routeChangeSuccess", function (event, next, current) {
-		if (Session.memberdict[$scope.activeChan] === undefined) {
-			Session.initMember($scope.activeChan);
-		}
+		Session.checkInitMember($scope.activeChan);
 		$scope.members = Session.memberdict[$scope.activeChan];
 	});
 

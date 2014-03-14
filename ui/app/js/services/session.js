@@ -19,19 +19,19 @@ angular.module('session', ['comm'])
 	};
 
 	/**
-	* init  members object of a channel
+	* init  members object of a channel if still undefined
 	*/
-	Service.initMember = function (channel) {
+	Service.checkInitMember = function (channel) {
 		if (this.memberdict[channel] === undefined) {
+			console.log("Session.checkInitMember " + channel);
 			this.memberdict[channel] = new Members(channel);
 			this.askChannelNames(channel);
 		}
 	};
+
 	//addMember add nick as a member of a channel
 	Service.addMember = function (nick, channel) {
-		if (this.memberdict[channel] === undefined) {
-			Service.initMember(channel);
-		}
+		this.checkInitMember(channel);
 		this.memberdict[channel].addNick(nick);
 	};
 
@@ -58,9 +58,7 @@ angular.module('session', ['comm'])
 	* add member array to memberlist of a channel
 	*/
 	Service.addMemberArr = function (nickArr, channel) {
-		if (this.memberdict[channel] === undefined) {
-			this.initMember(channel);
-		}
+		this.checkInitMember(channel);
 		this.memberdict[channel].add(nickArr, false);
 	};
 
