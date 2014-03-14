@@ -34,6 +34,15 @@ angular.module('session', ['comm'])
 		}
 	};
 
+	/**
+	* Destroy members object of a given channel
+	*/
+	Service.destroyMembers = function (channel) {
+		if (this.memberdict[channel] !== undefined) {
+			delete this.memberdict[channel];
+		}
+	};
+
 	//addMember add nick as a member of a channel
 	Service.addMember = function (nick, channel) {
 		this.checkInitMember(channel);
@@ -103,7 +112,10 @@ angular.module('session', ['comm'])
 		return false;
 	};
 
-	//add a target
+	/**
+	* Add a target to target list.
+	* Target could be a channel or a nick
+	*/
 	Service.addTarget = function (target) {
 		if (target[0] == "#") {
 			if (!isTargetChanExist(target)) {
@@ -119,6 +131,20 @@ angular.module('session', ['comm'])
 			}
 		}
 	};
+
+	/**
+	* Remove a channel from targetChannels list
+	*/
+	Service.delTargetChannel = function (channel) {
+		var idx = this.targetChannels.indexOf(channel);
+		if (idx > 0) {
+			this.targetChannels.splice(idx, 1);
+		}
+	};
+
+	/**
+	* Set targetChannels value to given channel array
+	*/
 	Service.setTargetChannels = function (chanArr) {
 		this.targetChannels = [];
 		for (var i in chanArr) {

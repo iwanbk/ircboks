@@ -39,6 +39,20 @@ ircboksControllers.controller('commandCtrl', ['$scope', '$rootScope', '$routePar
 	};
 
 	/**
+	* Send PART command
+	*/
+	var part = function (cmd, cmdArr) {
+		var args = [cmdArr[1]];
+		var msg = {
+			event: "part",
+			userId: Session.userId,
+			domain: 'irc',
+			args: args
+		};
+		wsock.send(JSON.stringify(msg));
+	};
+
+	/**
 	* Check if it is irc PRIVMSG command
 	*/
 	var isIrcPrivMsg = function (command) {
@@ -53,6 +67,9 @@ ircboksControllers.controller('commandCtrl', ['$scope', '$rootScope', '$routePar
 		switch (cmdArr[0]) {
 			case "join":
 				$scope.ircJoin(cmdArr[1]);
+				break;
+			case "part":
+				part(command, cmdArr);
 				break;
 			case "msg":
 				sendMsg(command);

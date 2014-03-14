@@ -57,7 +57,6 @@ var eventsToForward = map[string]bool{
 	"375":    true, //RPL_MOTDSTART
 	"376":    true, //RPL_ENDOFMOTD
 	"NOTICE": true,
-	"PART":   true,
 	"NICK":   true,
 	"QUIT":   true,
 }
@@ -122,6 +121,8 @@ func (c *IRCClient) processIrcMsg(em *EndptMsg) {
 		if channel, ok := em.GetDataString("channel"); ok {
 			c.client.Join(channel)
 		}
+	case "part":
+		c.part(em)
 	case "ircPrivMsg":
 		target, _ := em.GetDataString("target")
 		message, _ := em.GetDataString("message")
@@ -147,6 +148,15 @@ func (c *IRCClient) processIrcMsg(em *EndptMsg) {
 	default:
 		log.Debug("Unknown command:" + em.Event)
 	}
+}
+
+//PART command
+func (c *IRCClient) part(em *EndptMsg) {
+	if len(em.Args) == 0 {
+		log.Error("part() invalid args len = 0")
+		return
+	}
+	c.client.Part(em.Args[0], "")
 }
 
 //Loop handle all messages to/from irc client
@@ -178,6 +188,7 @@ func (c *IRCClient) handleIrcEvent(evt *ogric.Event) {
 		"001":     c.process001,
 		"PRIVMSG": c.processPrivMsg,
 		"JOIN":    c.processJoined,
+		"PART":    c.processPart,
 		"353":     c.processStartNames,
 		"366":     c.processEndNames,
 	}
@@ -277,8 +288,27 @@ func (c *IRCClient) processEndNames(e *ogric.Event) {
 
 //process JOIN event
 func (c *IRCClient) processJoined(e *ogric.Event) {
-	channelName := e.Arguments[0]
-	c.chanJoinedSet[channelName] = true
+	if len(e.Arguments) == 0 {
+		log.Error("processJoined() invalid event args len = 0")
+	} else {
+		log.Debug("process join nick=" + e.Nick)
+		channelName := e.Arguments[0]
+		c.chanJoinedSet[channelName] = true
+	}
+	c.forwardEvent(e)
+}
+
+//process PART
+func (c *IRCClient) processPart(e *ogric.Event) {
+	if len(e.Arguments) == 0 {
+		log.Error("processPart() invalid event args len = 0")
+	} else if e.Nick == c.nick {
+		channelName := e.Arguments[0]
+		c.chanJoinedSet[channelName] = true
+		if _, exist := c.chanJoinedSet[channelName]; exist {
+			delete(c.chanJoinedSet, channelName)
+		}
+	}
 	c.forwardEvent(e)
 }
 

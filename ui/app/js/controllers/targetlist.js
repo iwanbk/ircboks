@@ -27,6 +27,7 @@ ircboksControllers.controller('targetListCtrl', ['$scope', '$rootScope', '$route
 	//handle JOIN event
 	$scope.$on("JOIN", function (event, msg) {
 		if (msg.nick == Session.nick) {
+			Session.delTargetChannel(msg.args[0]);
 			$scope.askDumpInfo();
 		}
 	});

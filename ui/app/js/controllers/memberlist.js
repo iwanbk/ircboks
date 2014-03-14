@@ -34,10 +34,18 @@ ircboksControllers.controller('MemberListCtrl', ['$scope', '$rootScope', '$route
 		$scope.$apply();
 	});
 
-	//handle PART event
+	/**
+	* handle PART event.
+	* If it is our own nick : del Members object of this channel
+	* if not : del this nick from the channel's members
+	*/
 	$scope.$on("PART", function (event, msg) {
 		var chan_name = msg.args[0];
-		Session.delMember(msg.nick, chan_name);
+		if (msg.nick == Session.nick) {
+			Session.destroyMembers(chan_name);
+		} else {
+			Session.delMember(msg.nick, chan_name);
+		}
 		$scope.$apply();
 	});
 
