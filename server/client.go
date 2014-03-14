@@ -51,6 +51,8 @@ var eventsToForward = map[string]bool{
 	"003":    true,
 	"004":    true,
 	"005":    true,
+	"332":    true, //RPL_TOPIC
+	"333":    true, //RPL_TOPICWHOTIME
 	"372":    true, //RPL_MOTD
 	"375":    true, //RPL_MOTDSTART
 	"376":    true, //RPL_ENDOFMOTD
