@@ -18,6 +18,11 @@ angular.module('session', ['comm'])
 		targetNicks:[] //target nicks array
 	};
 
+	//check if we are already logged in
+	Service.isLoggedIn = function () {
+		return this.isLogin !== undefined && this.isLogin !== false;
+	};
+
 	/**
 	* init  members object of a channel if still undefined
 	*/

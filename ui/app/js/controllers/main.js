@@ -10,7 +10,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 
 	$scope.$on("$routeChangeSuccess", function (event, next, current) {
 		console.log("main:routeChangeSuccess");
-		if (Session.isLogin === undefined || Session.isLogin === false) {
+		if (!Session.isLoggedIn()) {
 			$location.path("/");
 			return;
 		}
