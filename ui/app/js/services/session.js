@@ -28,7 +28,7 @@ angular.module('session', ['comm'])
 	*/
 	Service.checkInitMember = function (channel) {
 		if (this.memberdict[channel] === undefined) {
-			console.log("Session.checkInitMember " + channel);
+			console.log("Session.checkInitMember. initializing " + channel);
 			this.memberdict[channel] = new Members(channel);
 			this.askChannelNames(channel);
 		}
@@ -43,20 +43,26 @@ angular.module('session', ['comm'])
 	//delMember del nick from a channel
 	Service.delMember = function (nick, channel) {
 		if (this.memberdict[channel] !== undefined) {
-			this.memberdict[channel].delNick(nick);
+			return this.memberdict[channel].delNick(nick);
 		}
+		return false;
 	};
 
 	/**
 	* Del nick from member of all joined channel.
+	* return list of channel that is joined by this nick.
 	*/
 	Service.delMemberFromAll = function (nick) {
+		var chan_joined = [];
 		for (var channel in this.memberdict) {
 			if (channel[0] != "#") {
-				return;
+				continue;
 			}
-			this.delMember(nick, channel);
+			if (this.delMember(nick, channel) === true) {
+				chan_joined.push(channel);
+			}
 		}
+		return chan_joined;
 	};
 
 	/**

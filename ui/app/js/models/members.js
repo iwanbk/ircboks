@@ -30,11 +30,18 @@
 				this.names.push(nick);
 			}
 		};
+
+		/**
+		* Del a nick from this memberlist.
+		* return true if nick existed. false if not.
+		*/
 		members.prototype.delNick = function (nick) {
 			var idx = this.names.indexOf(nick);
 			if (idx >= 0) {
 				this.names.splice(idx, 1);
+				return true;
 			}
+			return false;
 		};
 
 		return members;

@@ -46,4 +46,15 @@ ircboksControllers.controller('MemberListCtrl', ['$scope', '$rootScope', '$route
 		Session.delMemberFromAll(msg.nick);
 		$scope.$apply();
 	});
+
+	//handle NICK event
+	$scope.$on("NICK", function (event, msg) {
+		var oldNick = msg.nick;
+		var newNick = msg.message;
+		var chanJoined = Session.delMemberFromAll(oldNick);
+		for (var i in chanJoined) {
+			Session.addMember(newNick, chanJoined[i]);
+		}
+		$scope.$apply();
+	});
 }]);

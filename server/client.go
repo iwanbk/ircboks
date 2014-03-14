@@ -58,6 +58,7 @@ var eventsToForward = map[string]bool{
 	"376":    true, //RPL_ENDOFMOTD
 	"NOTICE": true,
 	"PART":   true,
+	"NICK":   true,
 	"QUIT":   true,
 }
 
