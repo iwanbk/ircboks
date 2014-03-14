@@ -175,6 +175,14 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		addToStatusPage(msg, "005");
 	});
 
+	$scope.$on('332', function (event, msg) {
+		console.log("TODO:handle 332 event = " + JSON.stringify(msg));
+	});
+
+	$scope.$on('333', function (event, msg) {
+		console.log("TODO:handle 333 event = " + JSON.stringify(msg));
+	});
+
 	$scope.$on('372', function (event, msg) {
 		addToStatusPage(msg, "372");
 	});
