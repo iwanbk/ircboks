@@ -10,12 +10,14 @@ import (
 	"net/http"
 )
 
+//wsContenxt represent a websocket connection context
 type wsContext struct {
-	UserID   string
-	LoggedIn bool
-	Ws       *websocket.Conn
+	UserID   string          //user id
+	LoggedIn bool            //login status. true if logged in
+	Ws       *websocket.Conn //websocket object
 }
 
+//construct new websocket context
 func newWSContext(ws *websocket.Conn) *wsContext {
 	w := new(wsContext)
 	w.Ws = ws
@@ -31,7 +33,7 @@ func main() {
 	r := mux.NewRouter()
 	r.Handle("/irc/", websocket.Handler(wsMain))
 
-	log.Debug("Starting ircbox server ..")
+	log.Debug("Starting ircboks server ..")
 	ContextMapInit()
 	go EndpointPublisher()
 
