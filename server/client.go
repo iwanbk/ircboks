@@ -2,7 +2,6 @@ package main
 
 import (
 	"code.google.com/p/go.net/websocket"
-	simplejson "github.com/bitly/go-simplejson"
 	"github.com/iwanbk/ogric"
 	log "github.com/ngmoco/timber"
 	"time"
@@ -103,13 +102,9 @@ func (c *IRCClient) dumpInfo() string {
 	}
 	data["chanlist"] = chanArr
 
-	js, _ := simplejson.NewJson([]byte("{}"))
-	js.Set("event", "ircBoxInfo")
-	js.Set("data", data)
-
-	jsStr, err := simpleJsonToString(js)
+	jsStr, err := jsonMarshal("ircBoxInfo", data)
 	if err != nil {
-		return "{}"
+		log.Error("dumpInfo()failed to marshal json = " + err.Error())
 	}
 	return jsStr
 }
@@ -210,13 +205,11 @@ func (c *IRCClient) forwardEvent(evt *ogric.Event) {
 	data["host"] = evt.Host
 	data["source"] = evt.Source
 	data["user"] = evt.User
+	data["raw"] = evt.Raw
 
-	js, _ := simplejson.NewJson([]byte("{}"))
-	js.Set("event", evt.Code)
-	js.Set("data", data)
-
-	jsStr, err := simpleJsonToString(js)
+	jsStr, err := jsonMarshal(evt.Code, data)
 	if err != nil {
+		log.Error("forwardEvent()failed to marshal json = " + err.Error())
 		return
 	}
 
@@ -256,12 +249,9 @@ func (c *IRCClient) processStartNames(e *ogric.Event) {
 	data["names"] = e.Message
 	data["end"] = false
 
-	js, _ := simplejson.NewJson([]byte("{}"))
-	js.Set("event", "channelNames")
-	js.Set("data", data)
-
-	jsStr, err := simpleJsonToString(js)
+	jsStr, err := jsonMarshal("channelNames", data)
 	if err != nil {
+		log.Error("processStartNames() failed to marshal json = " + err.Error())
 		return
 	}
 
@@ -274,12 +264,9 @@ func (c *IRCClient) processEndNames(e *ogric.Event) {
 	data["names"] = e.Message
 	data["end"] = true
 
-	js, _ := simplejson.NewJson([]byte("{}"))
-	js.Set("event", "channelNames")
-	js.Set("data", data)
-
-	jsStr, err := simpleJsonToString(js)
+	jsStr, err := jsonMarshal("channelNames", data)
 	if err != nil {
+		log.Error("processEndNames() failed to marshal json = " + err.Error())
 		return
 	}
 
