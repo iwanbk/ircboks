@@ -8,6 +8,8 @@ import (
 
 var mgoSes *mgo.Session
 
+//getSession return cloned session of mongodb connection.
+//It will create the connection when needed
 func getSession() (*mgo.Session, error) {
 	var err error
 	if mgoSes == nil {
@@ -40,7 +42,7 @@ func DBInsert(dbName, collectionName string, doc interface{}) error {
 }
 
 //DBQueryArr retrieve array of document from mongodb server
-func DBQueryArr(dbName, colName string, query bson.M, sortStr string, limit int, res interface{}) error {
+func DBQueryArr(dbName, colName string, query bson.M, sortStr string, limit, skip int, res interface{}) error {
 	sess, err := getSession()
 	if err != nil {
 		log.Error("[DBQueryArr]Can't connect to mongo. error:", err.Error())
@@ -48,7 +50,7 @@ func DBQueryArr(dbName, colName string, query bson.M, sortStr string, limit int,
 	}
 	defer sess.Close()
 
-	return sess.DB(dbName).C(colName).Find(query).Sort(sortStr).Limit(limit).All(res)
+	return sess.DB(dbName).C(colName).Find(query).Sort(sortStr).Skip(skip).Limit(limit).All(res)
 }
 
 func DBSelectDistinct(dbName, colName string, query bson.M, distinctBy string, res interface{}) error {

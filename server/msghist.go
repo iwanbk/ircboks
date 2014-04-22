@@ -21,6 +21,7 @@ type MessageHist struct {
 }
 
 //MsgHistChannel get message history of a channel
+//It will fetch message history from the latest to oldest
 func MsgHistChannel(em *EndptMsg, ws *websocket.Conn) {
 	channel, ok := em.GetDataString("channel")
 	if !ok {
@@ -29,29 +30,40 @@ func MsgHistChannel(em *EndptMsg, ws *websocket.Conn) {
 	}
 
 	log.Debug("[MsgHistChannel] userId=" + em.UserID + ".channel = " + channel)
-	//get data from DB
-	var res []MessageHist
 
-	query := bson.M{"userId": em.UserID, "target": channel}
-	err := DBQueryArr("ircboks", "msghist", query, "-timestamp", 50, &res)
-	if err != nil {
-		log.Error("[MsgHistChannel]fetching channel history:" + err.Error())
-		return
+	i := 0
+	for {
+		var res []MessageHist
+
+		query := bson.M{"userId": em.UserID, "target": channel}
+		err := DBQueryArr("ircboks", "msghist", query, "-timestamp", 50, 50*i, &res)
+		if err != nil {
+			log.Error("[MsgHistChannel]fetching channel history:" + err.Error())
+			return
+		}
+		if len(res) == 0 {
+			break
+		}
+
+		m := map[string]interface{}{
+			"logs":    res,
+			"channel": channel,
+		}
+
+		jsStr, err := jsonMarshal("msghistChannel", m)
+		if err != nil {
+			log.Error("[MsgHistChannel] failed to marshalling json = " + err.Error())
+		}
+
+		//send the result
+		websocket.Message.Send(ws, jsStr)
+
+		if res[len(res)-1].ReadFlag == true {
+			log.Debug("last message readFlag = true")
+			break
+		}
+		i = i + 1
 	}
-
-	//build json string
-	m := make(map[string]interface{})
-	m["logs"] = res
-	m["channel"] = channel
-
-	event := "msghistChannel"
-	jsStr, err := jsonMarshal(event, m)
-	if err != nil {
-		log.Error("[MsgHistChannel] failed to marshalling json = " + err.Error())
-	}
-
-	//send the result
-	websocket.Message.Send(ws, jsStr)
 }
 
 //MsgHistNick get message history of a nick
@@ -72,7 +84,7 @@ func msgHistNick(userID, nick string, ws *websocket.Conn) {
 	query2 := bson.M{"userId": userID, "target": nick}                    //message to this nick
 
 	query := bson.M{"$or": []bson.M{query1, query2}}
-	err := DBQueryArr("ircboks", "msghist", query, "-timestamp", 50, &hists)
+	err := DBQueryArr("ircboks", "msghist", query, "-timestamp", 50, 0, &hists)
 	if err != nil {
 		log.Error("[MsgHistNick]fetching channel nick:" + err.Error())
 		return
