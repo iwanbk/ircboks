@@ -3,7 +3,6 @@ package main
 
 import (
 	"code.google.com/p/go.net/websocket"
-	"fmt"
 	"github.com/gorilla/mux"
 	log "github.com/ngmoco/timber"
 	"github.com/stathat/jconfig"
@@ -37,11 +36,10 @@ func main() {
 	ContextMapInit()
 	go EndpointPublisher()
 
-	err := http.ListenAndServe(Config.GetString("host_port"), r)
-
-	if err != nil {
-		fmt.Println("ListenAndServer error : ", err.Error())
+	if err := http.ListenAndServe(Config.GetString("host_port"), r); err != nil {
+		log.Error("ListenAndServer error :", err.Error())
 	}
+	log.Close()
 }
 
 //websocket main handler
@@ -55,7 +53,6 @@ func wsMain(ws *websocket.Conn) {
 		//read message
 		err := websocket.Message.Receive(ws, &msg)
 		if err != nil {
-			log.Info("[wsMain]websocket read failed : " + err.Error())
 			break
 		}
 		log.Debug("[wsMain]endpoint's msg = " + msg)
