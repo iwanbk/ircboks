@@ -41,9 +41,6 @@ func MsgHistChannel(em *EndptMsg, ws *websocket.Conn) {
 			log.Error("[MsgHistChannel]fetching channel history:" + err.Error())
 			return
 		}
-		if len(res) == 0 {
-			break
-		}
 
 		m := map[string]interface{}{
 			"logs":    res,
@@ -58,8 +55,7 @@ func MsgHistChannel(em *EndptMsg, ws *websocket.Conn) {
 		//send the result
 		websocket.Message.Send(ws, jsStr)
 
-		if res[len(res)-1].ReadFlag == true {
-			log.Debug("last message readFlag = true")
+		if len(res) == 0 || res[len(res)-1].ReadFlag == true {
 			break
 		}
 		i = i + 1
@@ -77,31 +73,38 @@ func MsgHistNick(em *EndptMsg, ws *websocket.Conn) {
 }
 
 func msgHistNick(userID, nick string, ws *websocket.Conn) {
-	//get data from DB
-	var hists []MessageHist
-
+	i := 0
 	query1 := bson.M{"userId": userID, "nick": nick, "to_channel": false} //message from this nick, not in channel
 	query2 := bson.M{"userId": userID, "target": nick}                    //message to this nick
-
 	query := bson.M{"$or": []bson.M{query1, query2}}
-	err := DBQueryArr("ircboks", "msghist", query, "-timestamp", 50, 0, &hists)
-	if err != nil {
-		log.Error("[MsgHistNick]fetching channel nick:" + err.Error())
-		return
+
+	for {
+		var hists []MessageHist
+
+		err := DBQueryArr("ircboks", "msghist", query, "-timestamp", 50, 50*i, &hists)
+		if err != nil {
+			log.Error("[MsgHistNick]fetching channel nick:" + err.Error())
+			return
+		}
+
+		m := map[string]interface{}{
+			"logs": hists,
+			"nick": nick,
+		}
+
+		jsStr, err := jsonMarshal("msghistNickResp", m)
+		if err != nil {
+			log.Error("[MsgHistNick] failed to marshalling json = " + err.Error())
+		}
+
+		//send it back
+		websocket.Message.Send(ws, jsStr)
+
+		if len(hists) == 0 || hists[len(hists)-1].ReadFlag == true {
+			break
+		}
+		i += 1
 	}
-
-	//build json
-	m := make(map[string]interface{})
-	m["logs"] = hists
-	m["nick"] = nick
-
-	jsStr, err := jsonMarshal("msghistNickResp", m)
-	if err != nil {
-		log.Error("[MsgHistNick] failed to marshalling json = " + err.Error())
-	}
-
-	//send it back
-	websocket.Message.Send(ws, jsStr)
 }
 
 //MsgHistNicksUnread get all unread messages that is not from channel
