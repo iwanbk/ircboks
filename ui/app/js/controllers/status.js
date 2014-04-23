@@ -5,6 +5,7 @@ ircboksControllers.controller('statusCtrl', ['$scope', '$rootScope', '$routePara
 	$scope.activeChan = $routeParams.activeChan;
 	$scope.session = Session;
 	$scope.wsStr = "Connecting..";
+	$scope.nick = Session.nick;
 	if ($scope.activeChan === undefined) {//temporary hack for our status page
 		$scope.activeChan = $scope.activeServer;
 	}
@@ -25,5 +26,18 @@ ircboksControllers.controller('statusCtrl', ['$scope', '$rootScope', '$routePara
 				break;
 		}
 		$scope.$apply();
+	});
+
+	$scope.$on('001', function (event, msg) {
+		$scope.nick = Session.nick;
+		$scope.$apply();
+	});
+
+	$scope.$on("NICK", function(event, msg) {
+		if (msg.nick && msg.nick === Session.nick) {//change to our nick
+			Session.nick = msg.message;
+			$scope.nick = Session.nick;
+			$scope.$apply();
+		}
 	});
 }]);

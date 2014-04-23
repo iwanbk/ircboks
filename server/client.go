@@ -56,7 +56,6 @@ var eventsToForward = map[string]bool{
 	"375":    true, //RPL_MOTDSTART
 	"376":    true, //RPL_ENDOFMOTD
 	"NOTICE": true,
-	"NICK":   true,
 	"QUIT":   true,
 }
 
@@ -113,6 +112,7 @@ func (c *IRCClient) processIrcMsg(em *EndptMsg) {
 		"privmsg": c.PrivMsg,
 		"part":    c.Part,
 		"names":   c.Names,
+		"nick":    c.Nick,
 	}
 
 	if fn, ok := handlers[em.Event]; ok {
@@ -135,11 +135,21 @@ func (c *IRCClient) processIrcMsg(em *EndptMsg) {
 	}
 }
 
+//SetNick change nick of this client
+func (c *IRCClient) Nick(em *EndptMsg) {
+	if newNick, ok := em.GetDataString("new_nick"); ok {
+		c.client.SetNick(newNick)
+	} else {
+		log.Error("SetNick() empty nick")
+	}
+}
 func (c *IRCClient) Names(em *EndptMsg) {
 	if channel, ok := em.GetDataString("channel"); ok {
 		c.client.Names(channel)
 	}
 }
+
+//PrivMsg send IRC PRIVMSG
 func (c *IRCClient) PrivMsg(em *EndptMsg) {
 	var target, message string
 	var ok bool
@@ -204,6 +214,7 @@ func (c *IRCClient) handleIrcEvent(evt *ogric.Event) {
 		"PART":    c.processPart,
 		"353":     c.processStartNames,
 		"366":     c.processEndNames,
+		"NICK":    c.processNick,
 	}
 
 	fn, ok := fnMap[evt.Code]
@@ -226,6 +237,14 @@ func (c *IRCClient) forwardEvent(evt *ogric.Event) {
 	data["raw"] = evt.Raw
 
 	EndpointPublishID(c.userID, jsonMarshal(evt.Code, data))
+}
+
+//processNick handle NICK event
+func (c *IRCClient) processNick(e *ogric.Event) {
+	if e.Nick == c.nick {
+		c.nick = e.Message
+	}
+	c.forwardEvent(e)
 }
 
 //process PRIVMSG
