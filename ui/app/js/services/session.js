@@ -189,6 +189,37 @@ angular.module('session', ['comm'])
 		Service.isReady = false;
 		Service.isNeedStart = false;
 	});
+
+	/* auth expiration in minutes */
+	var AUTH_EXPIRATION_MIN = 120;
+
+	/* save auth details to local storage */
+	Service.saveAuth = function (userId, pass) {
+		var expMs = AUTH_EXPIRATION_MIN * 60 * 1000;
+		var record = {
+			userId: userId,
+			pass: pass,
+			expired: new Date().getTime() + expMs
+		};
+		localStorage.setItem("ircbokscred", JSON.stringify(record));
+	};
+
+	/* load auth details from local storage */
+	Service.loadAuth = function () {
+		var record = JSON.parse(localStorage.getItem("ircbokscred"));
+		if (!record) {
+			return {
+				valid:false,
+			};
+		}
+		return {
+			valid: new Date().getTime() < record.expired,
+			userId: record.userId,
+			pass: record.pass
+		};
+	};
+
+
 	return Service;
 }])
 ;

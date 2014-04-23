@@ -9,6 +9,18 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 
 	$scope.isNeedStart = false;
 
+	/* logging in when websocket connection opened */
+	$scope.$on("wsStatus", function (event, msg) {
+		if (msg == "open") {
+			var savedAuth = Session.loadAuth();
+			if (savedAuth.valid === true && savedAuth.userId !== null && savedAuth.pass !== null) {
+				$scope.userId = savedAuth.userId;
+				$scope.userPassword = savedAuth.pass;
+				$scope.login();
+			}
+		}
+	});
+
 	//login to ircboks
 	$scope.login = function () {
 		var msg = {
@@ -73,6 +85,7 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 			$scope.loginMsg = "Login failed : please check your username & password";
 			console.error("Login failed");
 		} else {
+			Session.saveAuth();
 			Session.userId = $scope.userId;
 			$scope.loginMsgClass = "alert-success";
 			$scope.loginMsg = "Login succeed. Initializing your ircboks";
