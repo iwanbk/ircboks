@@ -8,21 +8,40 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 	$scope.registrationMsg = "";
 
 	$scope.isNeedStart = false;
+	$scope.isLoggingIn = false;//flag that indicate this user in login process.
+	$scope.isLogin = false;
 
-	/* logging in when websocket connection opened */
-	$scope.$on("wsStatus", function (event, msg) {
-		if (msg == "open") {
-			var savedAuth = Session.loadAuth();
-			if (savedAuth.valid === true && savedAuth.userId !== null && savedAuth.pass !== null) {
-				$scope.userId = savedAuth.userId;
-				$scope.userPassword = savedAuth.pass;
-				$scope.login();
-			}
+	$scope.$on("$routeChangeSuccess", function (event, next, current) {
+		if ($scope.isLogin === false && $scope.isLoggingIn === false && wsock.isWsOpen === true) {
+			relogin();
 		}
 	});
 
+	/* logging in when websocket connection opened */
+	$scope.$on("wsStatus", function (event, msg) {
+		if (msg == "open" && $scope.isLoggingIn === false && $scope.isLogin === false) {
+			relogin();
+		} else {
+			console.log("msg = " + msg + ".isLoggingIn = " + $scope.isLoggingIn + ".isLogin = " + $scope.isLogin);
+		}
+	});
+
+
+	/**
+	* Try to relogin based on saved auth credentials from local storage
+	*/
+	var relogin = function () {
+		var savedAuth = Session.loadAuth();
+		if (savedAuth.valid === true && savedAuth.userId !== null && savedAuth.pass !== null) {
+			$scope.userId = savedAuth.userId;
+			$scope.userPassword = savedAuth.pass;
+			$scope.login();
+		}
+	};
+
 	//login to ircboks
 	$scope.login = function () {
+		$scope.isLoggingIn = true;
 		var msg = {
 			'event': 'login',
 			'domain': 'boks',
@@ -105,6 +124,7 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 				$scope.isNeedStart = true;
 			}
 		}
+		$scope.isLoggingIn = false;
 		$scope.$apply();
 	});
 
