@@ -313,27 +313,46 @@ func (c *IRCClient) process001(e *ogric.Event) {
 	}
 }
 
+func onClientCreateInvalidArgument(ws *websocket.Conn) {
+	data := map[string]interface{}{
+		"result": false,
+		"reason": "invalidArgument",
+	}
+	resp, err := jsonMarshal("clientStartResult", data)
+	if err != nil {
+		log.Error("onClientCreateInvalidArgument() failed to marshal json=" + err.Error())
+	}
+	websocket.Message.Send(ws, resp)
+}
+
 //ClientCreate create ircboks IRC client and start it
 func ClientCreate(em *EndptMsg, ws *websocket.Conn) {
-	var resp string
-	nick, _ := em.GetDataString("nick")
-	server, _ := em.GetDataString("server")
-	user, _ := em.GetDataString("user")
-	password, _ := em.GetDataString("password")
-	userID := em.UserID
-	//check parameter
-	if len(nick) == 0 || len(server) == 0 || len(user) == 0 {
-		log.Error("empty clientId / nick / server / username")
-		resp = `{"event":"clientStartResult", "data":{"result":"false", "reason":"invalidArgument"}}`
-		websocket.Message.Send(ws, resp)
+	var resp, nick, server, user, password string
+	var ok bool
+
+	if nick, ok = em.GetDataString("nick"); !ok {
+		onClientCreateInvalidArgument(ws)
+		return
+	}
+	if server, ok = em.GetDataString("server"); !ok {
+		onClientCreateInvalidArgument(ws)
+		return
+	}
+	if user, ok = em.GetDataString("user"); !ok {
+		onClientCreateInvalidArgument(ws)
+		return
+	}
+	if password, ok = em.GetDataString("password"); !ok {
+		onClientCreateInvalidArgument(ws)
 		return
 	}
 
-	if err := clientStart(userID, nick, password, user, server, ws); err != nil {
-		resp = `{"event":"clientStartResult", "data":{"result":"false"}}`
+	if err := clientStart(em.UserID, nick, password, user, server, ws); err != nil {
+		resp, err = jsonMarshal("clientStartResult", map[string]interface{}{"result": false})
 	} else {
-		resp = `{"event":"clientStartResult", "data":{"result":"true"}}`
+		resp, err = jsonMarshal("clientStartResult", map[string]interface{}{"result": true})
 	}
+
 	websocket.Message.Send(ws, resp)
 }
 

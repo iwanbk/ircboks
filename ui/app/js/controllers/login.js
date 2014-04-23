@@ -114,7 +114,7 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 	};
 
 	$scope.$on('clientStartResult', function (event, msg) {
-		if (msg.result == "true") {
+		if (msg.result === true) {
 			Session.isNeedStart = false;
 			Session.isReady = true;
 			$scope.toChatPage();
