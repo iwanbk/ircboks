@@ -85,7 +85,7 @@ ircboksControllers.controller('loginCtrl', ['$scope', '$rootScope', '$routeParam
 			$scope.loginMsg = "Login failed : please check your username & password";
 			console.error("Login failed");
 		} else {
-			Session.saveAuth();
+			Session.saveAuth($scope.userId, $scope.userPassword);
 			Session.userId = $scope.userId;
 			$scope.loginMsgClass = "alert-success";
 			$scope.loginMsg = "Login succeed. Initializing your ircboks";
