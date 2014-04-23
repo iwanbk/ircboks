@@ -107,42 +107,64 @@ func (c *IRCClient) dumpInfo() string {
 
 //processIrcMsg will unmarshal irc command json string and dispatch it to respective handler
 func (c *IRCClient) processIrcMsg(em *EndptMsg) {
+	//handler for IRC Command
+	handlers := map[string]func(*EndptMsg){
+		"ircJoin":    c.Join,
+		"ircPrivMsg": c.PrivMsg,
+		"part":       c.Part,
+		"ircNames":   c.Names,
+	}
+
+	if fn, ok := handlers[em.Event]; ok {
+		fn(em)
+		return
+	}
+
 	switch em.Event {
-	case "ircJoin":
-		if channel, ok := em.GetDataString("channel"); ok {
-			c.client.Join(channel)
-		}
-	case "part":
-		c.part(em)
-	case "ircPrivMsg":
-		target, _ := em.GetDataString("target")
-		message, _ := em.GetDataString("message")
-		if len(target) == 0 && len(message) == 0 {
-			return
-		}
-		c.client.Privmsg(target, message)
-		//save message
-		timestamp := time.Now().Unix()
-		MsgHistInsert(c.userID, target, c.nick, message, timestamp, true, false)
 	case "ircBoxInfo":
 		info := c.dumpInfo()
 		EndpointPublishID(em.UserID, info)
-	case "ircNames":
-		if channel, ok := em.GetDataString("channel"); ok {
-			c.client.Names(channel)
-		}
+
 	case "killMe":
 		c.client.Stop()
 		go func() {
 			c.stopChan <- true
 		}()
 	default:
-		log.Debug("Unknown command:" + em.Event)
+		log.Error("processIrcMessage() unknown command :" + em.Event)
+	}
+}
+
+func (c *IRCClient) Names(em *EndptMsg) {
+	if channel, ok := em.GetDataString("channel"); ok {
+		c.client.Names(channel)
+	}
+}
+func (c *IRCClient) PrivMsg(em *EndptMsg) {
+	var target, message string
+	var ok bool
+
+	if target, ok = em.GetDataString("target"); !ok {
+		return
+	}
+	if message, ok = em.GetDataString("message"); !ok {
+		return
+	}
+
+	c.client.Privmsg(target, message)
+	//save message
+	timestamp := time.Now().Unix()
+	MsgHistInsert(c.userID, target, c.nick, message, timestamp, true, false)
+}
+
+func (c *IRCClient) Join(em *EndptMsg) {
+	if channel, ok := em.GetDataString("channel"); ok {
+		c.client.Join(channel)
 	}
 }
 
 //PART command
-func (c *IRCClient) part(em *EndptMsg) {
+func (c *IRCClient) Part(em *EndptMsg) {
 	if len(em.Args) == 0 {
 		log.Error("part() invalid args len = 0")
 		return
@@ -312,10 +334,9 @@ func ClientCreate(em *EndptMsg, ws *websocket.Conn) {
 		onClientCreateInvalidArgument(ws)
 		return
 	}
-	if password, ok = em.GetDataString("password"); !ok {
-		onClientCreateInvalidArgument(ws)
-		return
-	}
+
+	//password is not mandatory, we can accept empty password
+	password, _ = em.GetDataString("password")
 
 	if err := clientStart(em.UserID, nick, password, user, server, ws); err != nil {
 		resp = jsonMarshal("clientStartResult", map[string]interface{}{"result": false})
