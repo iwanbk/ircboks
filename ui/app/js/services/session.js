@@ -1,3 +1,6 @@
+/**
+* Session service.
+*/
 angular.module('session', ['comm'])
 .factory('Session', ['$q', '$rootScope', 'wsock', function ($q, $rootScope, wsock) {
 	var Service = {
@@ -90,7 +93,7 @@ angular.module('session', ['comm'])
 			return;
 		}
 		var msg = {
-			event:"ircNames",
+			event:"names",
 			userId: this.userId,
 			domain: 'irc',
 			data: {
