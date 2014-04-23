@@ -30,11 +30,14 @@ var Config = jconfig.LoadConfig("config.json")
 func main() {
 	log.LoadConfiguration("timber.xml")
 	r := mux.NewRouter()
-	r.Handle("/irc/", websocket.Handler(wsMain))
 
-	log.Debug("Starting ircboks server ..")
+	r.Handle("/irc/", websocket.Handler(wsMain))
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("../ui/build/")))
+
 	ContextMapInit()
 	go EndpointPublisher()
+
+	log.Debug("Starting ircboks server ..")
 
 	if err := http.ListenAndServe(Config.GetString("host_port"), r); err != nil {
 		log.Error("ListenAndServer error :", err.Error())

@@ -45,7 +45,7 @@ angular.module('comm', [])
 		}
 	};
 
-	Service.connect("ws://"+window.location.host+":3000/irc/");
+	Service.connect("ws://"+window.location.host+"/irc/");
 	return Service;
 }])
 ;
