@@ -27,3 +27,23 @@ return{
     }
    };
   });
+
+ircboksApp.directive('chatMessage', function () {
+    return {
+      restrict: 'E',
+      scope: {
+        message: '='
+      },
+      template: "<strong>{{message.nick}}</strong> {{message.message}}"
+    };
+});
+
+ircboksApp.directive('otherMessage', function () {
+    return {
+      restrict: 'E',
+      scope: {
+        message: '='
+      },
+      template: "<font color='gray'>{{message.message}}</font>"
+    };
+});

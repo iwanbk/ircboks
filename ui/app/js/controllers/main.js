@@ -109,13 +109,28 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 		}
 	});
 
-	//handle JOIN event
+	/**
+	* handle JOIN event.
+	* Add notification message to chat window
+	*/
 	$scope.$on("JOIN", function (event, msg) {
+		var chan_name = msg.args[0];
+		var text = msg.nick + " has joined (" + msg.user + "@" + msg.host + ")";
+		var msgObj = new Message(text, Date.now()/1000, msg.nick, chan_name, true, "JOIN", "x");
+		MsgHistService.addNewMsg(chan_name, msgObj);
+		$scope.$apply();
 	});
 
-	//handle PART event
+	/**
+	* handle PART event.
+	* Add notification message to chat window.
+	*/
 	$scope.$on("PART", function (event, msg) {
-		var channame = msg.args[0];
+		var chan_name = msg.args[0];
+		var text = msg.nick + " has left (" + msg.user + "@" + msg.host + ")";
+		var msgObj = new Message(text, Date.now()/1000, msg.nick, chan_name, true, "JOIN", "x");
+		MsgHistService.addNewMsg(chan_name, msgObj);
+		$scope.$apply();
 	});
 
 	//handle QUIT event
