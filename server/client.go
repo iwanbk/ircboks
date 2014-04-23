@@ -102,11 +102,7 @@ func (c *IRCClient) dumpInfo() string {
 	}
 	data["chanlist"] = chanArr
 
-	jsStr, err := jsonMarshal("ircBoxInfo", data)
-	if err != nil {
-		log.Error("dumpInfo()failed to marshal json = " + err.Error())
-	}
-	return jsStr
+	return jsonMarshal("ircBoxInfo", data)
 }
 
 //processIrcMsg will unmarshal irc command json string and dispatch it to respective handler
@@ -207,13 +203,7 @@ func (c *IRCClient) forwardEvent(evt *ogric.Event) {
 	data["user"] = evt.User
 	data["raw"] = evt.Raw
 
-	jsStr, err := jsonMarshal(evt.Code, data)
-	if err != nil {
-		log.Error("forwardEvent()failed to marshal json = " + err.Error())
-		return
-	}
-
-	EndpointPublishID(c.userID, jsStr)
+	EndpointPublishID(c.userID, jsonMarshal(evt.Code, data))
 }
 
 //process PRIVMSG
@@ -235,12 +225,7 @@ func (c *IRCClient) processPrivMsg(e *ogric.Event) {
 	m["oid"] = oid
 
 	//send this message to endpoint
-	jsStr, err := jsonMarshal("ircPrivMsg", m)
-	if err != nil {
-		log.Error("[processPrivMsg]failed to marshal json:" + err.Error())
-		return
-	}
-	EndpointPublishID(c.userID, jsStr)
+	EndpointPublishID(c.userID, jsonMarshal("ircPrivMsg", m))
 }
 
 func (c *IRCClient) processStartNames(e *ogric.Event) {
@@ -249,13 +234,7 @@ func (c *IRCClient) processStartNames(e *ogric.Event) {
 	data["names"] = e.Message
 	data["end"] = false
 
-	jsStr, err := jsonMarshal("channelNames", data)
-	if err != nil {
-		log.Error("processStartNames() failed to marshal json = " + err.Error())
-		return
-	}
-
-	EndpointPublishID(c.userID, jsStr)
+	EndpointPublishID(c.userID, jsonMarshal("channelNames", data))
 }
 
 func (c *IRCClient) processEndNames(e *ogric.Event) {
@@ -264,13 +243,7 @@ func (c *IRCClient) processEndNames(e *ogric.Event) {
 	data["names"] = e.Message
 	data["end"] = true
 
-	jsStr, err := jsonMarshal("channelNames", data)
-	if err != nil {
-		log.Error("processEndNames() failed to marshal json = " + err.Error())
-		return
-	}
-
-	EndpointPublishID(c.userID, jsStr)
+	EndpointPublishID(c.userID, jsonMarshal("channelNames", data))
 }
 
 //process JOIN event
@@ -318,11 +291,8 @@ func onClientCreateInvalidArgument(ws *websocket.Conn) {
 		"result": false,
 		"reason": "invalidArgument",
 	}
-	resp, err := jsonMarshal("clientStartResult", data)
-	if err != nil {
-		log.Error("onClientCreateInvalidArgument() failed to marshal json=" + err.Error())
-	}
-	websocket.Message.Send(ws, resp)
+
+	websocket.Message.Send(ws, jsonMarshal("clientStartResult", data))
 }
 
 //ClientCreate create ircboks IRC client and start it
@@ -348,9 +318,9 @@ func ClientCreate(em *EndptMsg, ws *websocket.Conn) {
 	}
 
 	if err := clientStart(em.UserID, nick, password, user, server, ws); err != nil {
-		resp, err = jsonMarshal("clientStartResult", map[string]interface{}{"result": false})
+		resp = jsonMarshal("clientStartResult", map[string]interface{}{"result": false})
 	} else {
-		resp, err = jsonMarshal("clientStartResult", map[string]interface{}{"result": true})
+		resp = jsonMarshal("clientStartResult", map[string]interface{}{"result": true})
 	}
 
 	websocket.Message.Send(ws, resp)

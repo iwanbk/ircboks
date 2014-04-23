@@ -83,20 +83,11 @@ func checkAuth(userID, password string) (bool, error) {
 }
 
 func authFalseGenStr(reason string) string {
-	event := "loginResult"
-	data := make(map[string]interface{})
-	data["result"] = false
-
-	resp, err := jsonMarshal(event, data)
-	if err != nil {
-		return "{}"
-	}
-	return resp
+	return jsonMarshal("loginResult", map[string]interface{}{"result": false})
 }
 
 //AuthTrueGenStr generate json response when authentication succeed
 func authTrueGenStr(clientExist bool, nick, server, user string) string {
-	event := "loginResult"
 	data := make(map[string]interface{})
 	data["result"] = true
 	data["ircClientExist"] = clientExist
@@ -105,12 +96,7 @@ func authTrueGenStr(clientExist bool, nick, server, user string) string {
 		data["server"] = server
 		data["user"] = user
 	}
-
-	resp, err := jsonMarshal(event, data)
-	if err != nil {
-		return "{}"
-	}
-	return resp
+	return jsonMarshal("loginResult", data)
 }
 
 //check if user already exist

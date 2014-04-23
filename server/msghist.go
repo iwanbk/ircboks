@@ -47,13 +47,8 @@ func MsgHistChannel(em *EndptMsg, ws *websocket.Conn) {
 			"channel": channel,
 		}
 
-		jsStr, err := jsonMarshal("msghistChannel", m)
-		if err != nil {
-			log.Error("[MsgHistChannel] failed to marshalling json = " + err.Error())
-		}
-
 		//send the result
-		websocket.Message.Send(ws, jsStr)
+		websocket.Message.Send(ws, jsonMarshal("msghistChannel", m))
 
 		if len(res) == 0 || res[len(res)-1].ReadFlag == true {
 			break
@@ -92,13 +87,8 @@ func msgHistNick(userID, nick string, ws *websocket.Conn) {
 			"nick": nick,
 		}
 
-		jsStr, err := jsonMarshal("msghistNickResp", m)
-		if err != nil {
-			log.Error("[MsgHistNick] failed to marshalling json = " + err.Error())
-		}
-
 		//send it back
-		websocket.Message.Send(ws, jsStr)
+		websocket.Message.Send(ws, jsonMarshal("msghistNickResp", m))
 
 		if len(hists) == 0 || hists[len(hists)-1].ReadFlag == true {
 			break
@@ -117,15 +107,11 @@ func MsgHistNicksUnread(em *EndptMsg, ws *websocket.Conn) {
 		return
 	}
 
-	m := make(map[string]interface{})
-	m["nicks"] = unreadNicks
-
-	jsStr, err := jsonMarshal("msghistNicksUnread", m)
-	if err != nil {
-		log.Error("MsgHistNicksUnread() failed to marshal json = " + err.Error())
-		return
+	m := map[string]interface{}{
+		"nicks": unreadNicks,
 	}
-	websocket.Message.Send(ws, jsStr)
+
+	websocket.Message.Send(ws, jsonMarshal("msghistNicksUnread", m))
 }
 
 //MsgHistMarkRead mark messages readFlag as read
