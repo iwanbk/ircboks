@@ -109,10 +109,10 @@ func (c *IRCClient) dumpInfo() string {
 func (c *IRCClient) processIrcMsg(em *EndptMsg) {
 	//handler for IRC Command
 	handlers := map[string]func(*EndptMsg){
-		"ircJoin":    c.Join,
-		"ircPrivMsg": c.PrivMsg,
-		"part":       c.Part,
-		"ircNames":   c.Names,
+		"join":    c.Join,
+		"privmsg": c.PrivMsg,
+		"part":    c.Part,
+		"names":   c.Names,
 	}
 
 	if fn, ok := handlers[em.Event]; ok {

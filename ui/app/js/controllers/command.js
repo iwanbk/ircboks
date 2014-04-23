@@ -10,7 +10,7 @@ ircboksControllers.controller('commandCtrl', ['$scope', '$rootScope', '$routePar
 	//send PRIVMSG
 	$scope.sendPrivMsg = function (target, message) {
 		var msg = {
-			event: 'ircPrivMsg',
+			event: 'privmsg',
 			userId: Session.userId,
 			domain: 'irc',
 			data: {
@@ -28,7 +28,7 @@ ircboksControllers.controller('commandCtrl', ['$scope', '$rootScope', '$routePar
 
 	$scope.ircJoin = function (channel) {
 		var msg = {
-			event: 'ircJoin',
+			event: 'join',
 			userId: Session.userId,
 			domain: 'irc',
 			data: {
