@@ -3,7 +3,8 @@ IRCBoks
 
 IRCBoks is Web Based IRC Client with persistent connection.
 - Multiuser support
-- IRC connection will not be closed when you close the browser
+- IRC connection will not be closed when you close the browser.
+  Offline message will be delivered when you are online. 
 - Use Go in server side and AngularJS in client side
 - User and chat data stored in mongodb
 - AngularJS use websocket to communicate with Go backend
