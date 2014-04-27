@@ -1,12 +1,16 @@
-<span class="alert alert-info">{{activeChan}}</span>
-<div data-ng-repeat="m in chat_hist.messages" scroll-item>
-	<div class="row" ng-show="showDate($index, chat_hist.messages)">
-		<div class="col-md-10 info" style="text-align:center;">{{m.timestamp | date:'MMMM dd'}}</div>
-	</div>
-	<div class="row">
-		<div class="col-md-1 font-size-micro">{{m.timestamp | date:'h:mma'}}</div>
-		<!--<div class="col-md-9"><strong>{{m.nick}}</strong> {{m.message}}</div>-->
-		<div class="col-md-9" ng-if="m.eventType=='PRIVMSG'"><chat-message message="m"></chat-message></div>
-		<div class="col-md-9" ng-if="m.eventType!='PRIVMSG'"><other-message message="m"></chat-message></div>
+<div class="row">
+	<span class="alert alert-info">{{activeChan}}</span>
+</div>
+<div id="chat" class="row" style="margin-bottom: 10px;height: 80%;overflow-y: scroll;overflow-x:hidden;" scroll-if  >
+	<div data-ng-repeat="m in chat_hist.messages" scroll-item>
+		<div class="row" ng-show="showDate($index, chat_hist.messages)">
+			<div class="col-md-10 info" style="text-align:center;">{{m.timestamp | date:'MMMM dd'}}</div>
+		</div>
+		<div class="row">
+			<div class="col-md-1 font-size-micro">{{m.timestamp | date:'h:mma'}}</div>
+			<!--<div class="col-md-9"><strong>{{m.nick}}</strong> {{m.message}}</div>-->
+			<div class="col-md-9" ng-if="m.eventType=='PRIVMSG'"><chat-message message="m"></chat-message></div>
+			<div class="col-md-9" ng-if="m.eventType!='PRIVMSG'"><other-message message="m"></chat-message></div>
+		</div>
 	</div>
 </div>
