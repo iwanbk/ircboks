@@ -113,6 +113,7 @@ func (c *IRCClient) processIrcMsg(em *EndptMsg) {
 		"part":    c.Part,
 		"names":   c.Names,
 		"nick":    c.Nick,
+		"topic":   c.Topic,
 	}
 
 	if fn, ok := handlers[em.Event]; ok {
@@ -180,6 +181,20 @@ func (c *IRCClient) Part(em *EndptMsg) {
 		return
 	}
 	c.client.Part(em.Args[0], "")
+}
+
+func (c *IRCClient) Topic(em *EndptMsg) {
+	var channel string
+	var ok bool
+	if channel, ok = em.GetDataString("channel"); !ok || len(channel) == 0 {
+		return
+	}
+	command := "TOPIC " + channel
+
+	if topic, ok := em.GetDataString("topic"); ok {
+		command += " " + topic
+	}
+	c.client.SendRaw(command)
 }
 
 //Loop handle all messages to/from irc client

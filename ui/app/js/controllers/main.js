@@ -14,6 +14,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 			$location.path("/");
 			return;
 		}
+		$scope.activeChanTopic = Target.getChannelTopic($scope.activeChan);
 		MsgHistService.checkInit($scope.activeChan);
 		$scope.chat_hist = MsgHistService.getChatHist($scope.activeChan);
 		MsgHistService.markAllAsRead($scope.activeChan);
@@ -191,7 +192,7 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 	});
 
 	$scope.$on('332', function (event, msg) {
-		console.log("TODO:handle 332 event = " + JSON.stringify(msg));
+		Target.setChannelTopic(msg.args[1], msg.message);
 	});
 
 	$scope.$on('333', function (event, msg) {

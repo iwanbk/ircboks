@@ -1,1 +1,1 @@
-var ircboksControllers = angular.module('ircboksControllers', ['comm', 'session', 'msghist', 'targetServices']);
+var ircboksControllers = angular.module('ircboksControllers', ['comm', 'session', 'msghist', 'targetServices', 'ircServices']);

@@ -2,8 +2,8 @@
 * Manage all target channels & nicks.
 * This service will replace all target related services in Session service.
 */
-angular.module('targetServices', [])
-.factory('Target', ['$rootScope',  function ($rootScope) {
+angular.module('targetServices', ['ircServices'])
+.factory('Target', ['$rootScope', 'ircCommand',  function ($rootScope, ircCommand) {
 	var Service = {
 		targetChannels:[],//target channels array
 		targetNicks:[] //target nicks array
@@ -18,6 +18,17 @@ angular.module('targetServices', [])
 			}
 		}
 		return false;
+	};
+
+	//check if a channel already in target list
+	var getTargetChannelIdx = function (chan_name) {
+		for (i = 0; i < Service.targetChannels.length; i++) {
+			var chan = Service.targetChannels[i];
+			if (chan.name == chan_name) {
+				return i;
+			}
+		}
+		return -1;
 	};
 
 	/**
@@ -54,14 +65,37 @@ angular.module('targetServices', [])
 	* Set targetChannels value to given channel array
 	*/
 	Service.setTargetChannels = function (chanArr) {
+		console.error("set targetChannels");
+		console.error(chanArr);
 		this.targetChannels = [];
 		for (var i in chanArr) {
 			var chan = {
 				name: chanArr[i],
+				topic: '',
 				encName: encodeURIComponent(chanArr[i])
 			};
 			this.targetChannels.push(chan);
+			ircCommand.topicGet(chan.name);
 		}
+	};
+
+	Service.setChannelTopic = function (channel, topic) {
+		var idx = getTargetChannelIdx(channel);
+		if (idx >= 0) {
+			this.targetChannels[idx].topic = topic;
+		}
+	};
+
+	Service.getChannelTopic = function (channel) {
+		if (channel[0] != '#') {
+			return "";
+		}
+		var idx = getTargetChannelIdx(channel);
+		if (idx >= 0) {
+			console.error("will return : " + this.targetChannels[idx].topic);
+			return this.targetChannels[idx].topic;
+		}
+		return "";
 	};
 
 	return Service;

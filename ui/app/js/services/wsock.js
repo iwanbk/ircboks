@@ -1,5 +1,5 @@
 angular.module('comm', [])
-.factory('wsock', ['$q', '$rootScope',  function ($q, $rootScope) {
+.factory('wsock', ['$rootScope', function ($rootScope) {
 	var Service = {
 		isWsOpen: false
 	};
@@ -44,6 +44,13 @@ angular.module('comm', [])
 			console.log("[wsock] drop message = " + msg);
 		}
 	};
+
+	/**
+	* Send IRCBoks command to IRCBoks server.
+	*/
+	Service.sendCommand = function (command) {
+		this.send(JSON.stringify(command));
+	} ;
 
 	Service.connect("ws://"+window.location.host+"/irc/");
 	return Service;
