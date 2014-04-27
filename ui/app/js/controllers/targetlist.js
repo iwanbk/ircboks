@@ -1,5 +1,5 @@
-ircboksControllers.controller('targetListCtrl', ['$scope', '$rootScope', '$routeParams',  '$location', 'wsock', 'Session', 'MsgHistService',
-	function ($scope, $rootScope, $routeParams, $location, wsock, Session, MsgHistService) {
+ircboksControllers.controller('targetListCtrl', ['$scope', '$rootScope', '$routeParams',  '$location', 'wsock', 'Session', 'MsgHistService', 'Target',
+	function ($scope, $rootScope, $routeParams, $location, wsock, Session, MsgHistService, Target) {
 
 	$scope.activeServer = $routeParams.activeServer;
 	$scope.activeChan = $routeParams.activeChan;
@@ -27,7 +27,7 @@ ircboksControllers.controller('targetListCtrl', ['$scope', '$rootScope', '$route
 	//handle JOIN event
 	$scope.$on("JOIN", function (event, msg) {
 		if (msg.nick == Session.nick) {
-			Session.delTargetChannel(msg.args[0]);
+			Target.delTargetChannel(msg.args[0]);
 			$scope.askDumpInfo();
 		}
 	});
@@ -44,8 +44,8 @@ ircboksControllers.controller('targetListCtrl', ['$scope', '$rootScope', '$route
 	* ircBoxInfo contain all global info about this user.
 	*/
 	$scope.$on('ircBoxInfo', function (event, msg) {
-		Session.setTargetChannels(msg.chanlist);
-		$scope.chanlist = Session.targetChannels;
+		Target.setTargetChannels(msg.chanlist);
+		$scope.chanlist = Target.targetChannels;
 		$scope.$apply();
 	});
 
@@ -55,23 +55,23 @@ ircboksControllers.controller('targetListCtrl', ['$scope', '$rootScope', '$route
 	$scope.$on('ircPrivMsg', function (event, msg) {
 		//add user to userlist if it is message to us
 		if (msg.target[0] != "#") {
-			Session.addTarget(msg.nick);
+			Target.addTarget(msg.nick);
 		} else {
-			Session.addTarget(msg.target);
+			Target.addTarget(msg.target);
 		}
 		$scope.$apply();
 	});
 
 	$scope.$on("$routeChangeSuccess", function (event, next, current) {
-		$scope.chanlist = Session.targetChannels;
-		$scope.userlist = Session.targetNicks;
+		$scope.chanlist = Target.targetChannels;
+		$scope.userlist = Target.targetNicks;
 
 		if ($scope.chanlist.length === 0) {
 			$scope.askDumpInfo();
 		}
 
 		if ($scope.activeChan[0] != "#" && $scope.activeChan != $scope.activeServer) {
-			Session.addTarget($scope.activeChan);
+			Target.addTarget($scope.activeChan);
 		}
 	});
 

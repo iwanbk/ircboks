@@ -104,61 +104,6 @@ angular.module('session', ['comm'])
 	};
 
 
-	//check if a channel already in target list
-	var isTargetChanExist = function (chan_name) {
-		for (i = 0; i < Service.targetChannels.length; i++) {
-			var chan = Service.targetChannels[i];
-			if (chan.name == chan_name) {
-				return true;
-			}
-		}
-		return false;
-	};
-
-	/**
-	* Add a target to target list.
-	* Target could be a channel or a nick
-	*/
-	Service.addTarget = function (target) {
-		if (target[0] == "#") {
-			if (!isTargetChanExist(target)) {
-				var chan = {
-					name:target,
-					encName: encodeURIComponent(target)
-				};
-				this.targetChannels.push(chan);
-			}
-		} else {
-			if (this.targetNicks.indexOf(target) == -1) {
-				this.targetNicks.push(target);
-			}
-		}
-	};
-
-	/**
-	* Remove a channel from targetChannels list
-	*/
-	Service.delTargetChannel = function (channel) {
-		var idx = this.targetChannels.indexOf(channel);
-		if (idx > 0) {
-			this.targetChannels.splice(idx, 1);
-		}
-	};
-
-	/**
-	* Set targetChannels value to given channel array
-	*/
-	Service.setTargetChannels = function (chanArr) {
-		this.targetChannels = [];
-		for (var i in chanArr) {
-			var chan = {
-				name: chanArr[i],
-				encName: encodeURIComponent(chanArr[i])
-			};
-			this.targetChannels.push(chan);
-		}
-	};
-
 	/**
 	* kill our IRC client
 	*/
