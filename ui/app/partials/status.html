@@ -1,6 +1,7 @@
 <div class="well well-sm" ng-hide="session.isReady">
-Connection : {{wsStr}}
+	Connection : {{wsStr}}
 </div>
-<div class="well well-sm" ng-show="session.isReady">
-<strong>Connection</strong> : {{wsStr}}. <strong>Server</strong>: {{session.server}}. <strong>Nick</strong>: {{nick}}
+<div class="row well well-sm" ng-show="session.isReady">
+	<div><strong>Connection</strong> : {{wsStr}}. <strong>Server</strong>: {{session.server}}. <strong>Nick</strong>: {{nick}}</div>
+	<div><strong>{{activeChan}}</strong> <font color='gray'>{{activeChanTopic}}</font></div>
 </div>

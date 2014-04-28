@@ -65,8 +65,6 @@ angular.module('targetServices', ['ircServices'])
 	* Set targetChannels value to given channel array
 	*/
 	Service.setTargetChannels = function (chanArr) {
-		console.error("set targetChannels");
-		console.error(chanArr);
 		this.targetChannels = [];
 		for (var i in chanArr) {
 			var chan = {
@@ -79,6 +77,9 @@ angular.module('targetServices', ['ircServices'])
 		}
 	};
 
+	/**
+	* Set topic of a channel.
+	*/
 	Service.setChannelTopic = function (channel, topic) {
 		var idx = getTargetChannelIdx(channel);
 		if (idx >= 0) {
@@ -86,13 +87,15 @@ angular.module('targetServices', ['ircServices'])
 		}
 	};
 
+	/**
+	* get topic of a channel.
+	*/
 	Service.getChannelTopic = function (channel) {
-		if (channel[0] != '#') {
+		if (channel === undefined || channel[0] != '#') {
 			return "";
 		}
 		var idx = getTargetChannelIdx(channel);
 		if (idx >= 0) {
-			console.error("will return : " + this.targetChannels[idx].topic);
 			return this.targetChannels[idx].topic;
 		}
 		return "";

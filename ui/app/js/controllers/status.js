@@ -1,14 +1,21 @@
-ircboksControllers.controller('statusCtrl', ['$scope', '$rootScope', '$routeParams',  '$location', 'wsock', 'Session',
-	function ($scope, $rootScope, $routeParams, $location, wsock, Session) {
-
-	$scope.activeServer = $routeParams.activeServer;
-	$scope.activeChan = $routeParams.activeChan;
-	$scope.session = Session;
+/**
+* Status bar controller.
+*/
+ircboksControllers.controller('statusCtrl', ['$scope', '$rootScope', '$routeParams',  '$location', 'wsock', 'Session', 'Target',
+	function ($scope, $rootScope, $routeParams, $location, wsock, Session, Target) {
 	$scope.wsStr = "Connecting..";
-	$scope.nick = Session.nick;
-	if ($scope.activeChan === undefined) {//temporary hack for our status page
-		$scope.activeChan = $scope.activeServer;
-	}
+
+	$scope.$on("$routeChangeSuccess", function (event, next, current) {
+		$scope.session = Session;
+		$scope.nick = Session.nick;
+		$scope.activeServer = $routeParams.activeServer;
+		$scope.activeChan = $routeParams.activeChan;
+		if ($scope.activeChan === undefined) {//temporary hack for our status page
+			$scope.activeChan = $scope.activeServer;
+		}
+		$scope.activeChanTopic = Target.getChannelTopic($scope.activeChan);
+	});
+
 
 	$scope.$on("wsStatus", function (event, msg) {
 		switch (msg) {

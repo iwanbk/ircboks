@@ -14,7 +14,6 @@ ircboksControllers.controller('mainCtrl', ['$scope', '$rootScope', '$routeParams
 			$location.path("/");
 			return;
 		}
-		$scope.activeChanTopic = Target.getChannelTopic($scope.activeChan);
 		MsgHistService.checkInit($scope.activeChan);
 		$scope.chat_hist = MsgHistService.getChatHist($scope.activeChan);
 		MsgHistService.markAllAsRead($scope.activeChan);
