@@ -431,9 +431,7 @@ func ClientDestroy(em *EndptMsg, ws *websocket.Conn) {
 	ContextMap.Del(em.UserID)
 
 	em = &EndptMsg{"ircClientDestroyed", "", "", nil, nil, ""}
-	jsonStr, err := em.MarshalJSON()
-	if err != nil {
-		log.Error("ClientDestroy()failed to marshal json = " + err.Error())
-	}
+	jsonStr := em.Marshal()
+
 	websocket.Message.Send(ws, jsonStr)
 }

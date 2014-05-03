@@ -46,11 +46,11 @@ func (e *EndptMsg) GetDataString(key string) (string, bool) {
 
 }
 
-//MarshalJSON marshal this object into json string
-func (e *EndptMsg) MarshalJSON() (string, error) {
+//Marshal marshal this object into json string
+func (e *EndptMsg) Marshal() string {
 	b, err := json.Marshal(e)
 	if err != nil {
-		return "", err
+		return "{}"
 	}
-	return string(b), nil
+	return string(b)
 }
