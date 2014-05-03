@@ -53,6 +53,7 @@ func DBQueryArr(dbName, colName string, query bson.M, sortStr string, limit, ski
 	return sess.DB(dbName).C(colName).Find(query).Sort(sortStr).Skip(skip).Limit(limit).All(res)
 }
 
+//DBSelectDistinct do similar operation like 'select ... distinct ...' on SQL
 func DBSelectDistinct(dbName, colName string, query bson.M, distinctBy string, res interface{}) error {
 	sess, err := getSession()
 	if err != nil {

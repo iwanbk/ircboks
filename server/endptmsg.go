@@ -23,7 +23,7 @@ func NewEndptMsgFromStr(jsonStr string) (*EndptMsg, error) {
 		return nil, err
 	}
 	if len(e.Event) == 0 || len(e.Domain) == 0 || len(e.UserID) == 0 {
-		return nil, fmt.Errorf("Missing mandatory field.userID=%s, event=%s, domain = %s", e.UserID, e.Event, e.Domain)
+		return nil, fmt.Errorf("missing mandatory field.userID=%s, event=%s, domain = %s", e.UserID, e.Event, e.Domain)
 	}
 	e.Raw = jsonStr
 	return &e, nil
@@ -46,8 +46,8 @@ func (e *EndptMsg) GetDataString(key string) (string, bool) {
 
 }
 
-//MarshalJson marshal this object into json string
-func (e *EndptMsg) MarshalJson() (string, error) {
+//MarshalJSON marshal this object into json string
+func (e *EndptMsg) MarshalJSON() (string, error) {
 	b, err := json.Marshal(e)
 	if err != nil {
 		return "", err

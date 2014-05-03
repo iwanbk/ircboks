@@ -136,7 +136,7 @@ func (c *IRCClient) processIrcMsg(em *EndptMsg) {
 	}
 }
 
-//SetNick change nick of this client
+//Nick change nick of this client
 func (c *IRCClient) Nick(em *EndptMsg) {
 	if newNick, ok := em.GetDataString("new_nick"); ok {
 		c.client.SetNick(newNick)
@@ -144,6 +144,8 @@ func (c *IRCClient) Nick(em *EndptMsg) {
 		log.Error("SetNick() empty nick")
 	}
 }
+
+//Names send names IRC command
 func (c *IRCClient) Names(em *EndptMsg) {
 	if channel, ok := em.GetDataString("channel"); ok {
 		c.client.Names(channel)
@@ -168,13 +170,14 @@ func (c *IRCClient) PrivMsg(em *EndptMsg) {
 	MsgHistInsert(c.userID, target, c.nick, message, timestamp, true, false)
 }
 
+//Join a channel
 func (c *IRCClient) Join(em *EndptMsg) {
 	if channel, ok := em.GetDataString("channel"); ok {
 		c.client.Join(channel)
 	}
 }
 
-//PART command
+//Part or leave a channel
 func (c *IRCClient) Part(em *EndptMsg) {
 	if len(em.Args) == 0 {
 		log.Error("part() invalid args len = 0")
@@ -183,6 +186,7 @@ func (c *IRCClient) Part(em *EndptMsg) {
 	c.client.Part(em.Args[0], "")
 }
 
+//Topic request channel's topic
 func (c *IRCClient) Topic(em *EndptMsg) {
 	var channel string
 	var ok bool
@@ -427,7 +431,7 @@ func ClientDestroy(em *EndptMsg, ws *websocket.Conn) {
 	ContextMap.Del(em.UserID)
 
 	em = &EndptMsg{"ircClientDestroyed", "", "", nil, nil, ""}
-	jsonStr, err := em.MarshalJson()
+	jsonStr, err := em.MarshalJSON()
 	if err != nil {
 		log.Error("ClientDestroy()failed to marshal json = " + err.Error())
 	}

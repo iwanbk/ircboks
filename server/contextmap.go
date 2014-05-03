@@ -21,9 +21,9 @@ func ContextMapInit() {
 
 //Get retrieve context of this userId.
 //return the context or nil and bool value indicating whether the context was found
-func (c *contextMap) Get(userId string) (*ClientContext, bool) {
+func (c *contextMap) Get(userID string) (*ClientContext, bool) {
 	c.RLock()
-	ctx, found := c.ctxMap[userId]
+	ctx, found := c.ctxMap[userID]
 	c.RUnlock()
 
 	return ctx, found
@@ -31,13 +31,13 @@ func (c *contextMap) Get(userId string) (*ClientContext, bool) {
 
 //Del remove context of this userId
 //return true if the context exist
-func (c *contextMap) Del(userId string) bool {
+func (c *contextMap) Del(userID string) bool {
 	c.Lock()
 
-	_, found := c.ctxMap[userId]
+	_, found := c.ctxMap[userID]
 
 	if found {
-		delete(c.ctxMap, userId)
+		delete(c.ctxMap, userID)
 	}
 
 	c.Unlock()
@@ -45,8 +45,8 @@ func (c *contextMap) Del(userId string) bool {
 }
 
 //Add context
-func (c *contextMap) Add(userId, nick, server, user string, inChan chan *EndptMsg, ws *websocket.Conn) *ClientContext {
-	ctx := NewClientContext(userId, nick, server, user, inChan, ws)
+func (c *contextMap) Add(userID, nick, server, user string, inChan chan *EndptMsg, ws *websocket.Conn) *ClientContext {
+	ctx := NewClientContext(userID, nick, server, user, inChan, ws)
 
 	c.Lock()
 	c.ctxMap[userId] = ctx
