@@ -49,7 +49,7 @@ func (c *contextMap) Add(userID, nick, server, user string, inChan chan *EndptMs
 	ctx := NewClientContext(userID, nick, server, user, inChan, ws)
 
 	c.Lock()
-	c.ctxMap[userId] = ctx
+	c.ctxMap[userID] = ctx
 	c.Unlock()
 	return ctx
 }
