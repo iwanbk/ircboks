@@ -105,8 +105,13 @@ func dispatchBoksHandler(wsCtx *wsContext, em *EndptMsg) {
 	}
 
 	if !wsCtx.LoggedIn {
-		resp = `{"event":"illegalAccess", "data":{"reason":"needLogin"}}`
-		websocket.Message.Send(wsCtx.Ws, resp)
+		em := EndptMsg{
+			Event: "illegalAccess",
+			Data: map[string]interface{}{
+				"reason": "needLogin",
+			},
+		}
+		websocket.Message.Send(wsCtx.Ws, em.Marshal())
 	}
 
 	if fn, ok := boksHandlers[em.Event]; ok {
