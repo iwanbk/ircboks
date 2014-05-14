@@ -93,7 +93,6 @@ var boksHandlers = map[string]func(*EndptMsg, *websocket.Conn){
 
 //handle IRCBoks message
 func dispatchBoksHandler(wsCtx *wsContext, em *EndptMsg) {
-	resp := "{}"
 	if em.Event == "login" {
 		resp, isLoginOK, _ := UserLogin(em, wsCtx.Ws)
 		wsCtx.LoggedIn = isLoginOK
