@@ -42,6 +42,10 @@ angular.module('msghist', ['comm', 'session'])
 		if (oidArr.length === 0) {
 			return;
 		}
+		//convert oid type to string because args expect array of string
+		for (i=0; i < oidArr.length; i++) {
+			oidArr[i] = oidArr[i].toString();
+		}
 		var msg = {
 			event: 'msghistMarkRead',
 			userId: Session.userId,
@@ -53,7 +57,7 @@ angular.module('msghist', ['comm', 'session'])
 	};
 
 	Service.markAsRead = function (target, oid) {
-		var oidArr = [oid];
+		var oidArr = [oid.toString()];
 		var msg = {
 			event: 'msghistMarkRead',
 			userId: Session.userId,

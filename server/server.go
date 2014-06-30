@@ -2,11 +2,13 @@
 package main
 
 import (
+	"net/http"
+
 	"code.google.com/p/go.net/websocket"
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 	log "github.com/ngmoco/timber"
 	"github.com/stathat/jconfig"
-	"net/http"
 )
 
 //wsContenxt represent a websocket connection context
@@ -25,12 +27,26 @@ func newWSContext(ws *websocket.Conn) *wsContext {
 }
 
 //Config is this application configuration
-var Config = jconfig.LoadConfig("config.json")
+var (
+	DB     gorm.DB
+	Config = jconfig.LoadConfig("config.json")
+)
 
 func main() {
-	log.LoadConfiguration("timber.xml")
-	r := mux.NewRouter()
+	var err error
 
+	//initialize log
+	log.LoadConfiguration("timber.xml")
+
+	//DB Init
+	DB, err = DBSQLInit()
+	if err != nil {
+		log.Error("database initialization failed:%s\n", err.Error())
+		return
+	}
+
+	//initialize route
+	r := mux.NewRouter()
 	r.Handle("/irc/", websocket.Handler(wsMain))
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("../ui/build/")))
 
