@@ -4,22 +4,19 @@ import (
 	"code.google.com/p/go.crypto/bcrypt"
 	"code.google.com/p/go.net/websocket"
 	log "github.com/ngmoco/timber"
-	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
 )
 
 //AuthInfo represent authentication info sent by user when logging in
 type AuthInfo struct {
-	ID       bson.ObjectId `bson:"_id"`
-	UserID   string        `bson:"userId" json:"userId"`
-	Password string        `bson:"password" json:"password"`
+	UserID   string `bson:"userId" json:"userId"`
+	Password string `bson:"password" json:"password"`
 }
 
 //User represent a user in ircboks
 type User struct {
-	ID       bson.ObjectId `bson:"_id"`
-	UserID   string        `bson:"userId"`
-	Password string        `bson:"password"`
+	Id       int64
+	UserId   string
+	Password string
 }
 
 //UserLogin handle login message from endpoint.
@@ -71,9 +68,7 @@ func UserLogout(userID string, ws *websocket.Conn) {
 func checkAuth(userID, password string) (bool, error) {
 	//get user from db
 	var user User
-	bsonM := bson.M{"userId": userID}
-	err := DBGetOne("ircboks", "user", bsonM, &user)
-	if err != nil {
+	if err := DB.Where("user_id = ?", userID).First(&user).Error; err != nil {
 		log.Info("[checkAuth] user " + userID + " not found")
 		return false, err
 	}
@@ -102,9 +97,10 @@ func authTrueGenStr(clientExist bool, nick, server, user string) string {
 //check if user already exist
 func isUserExist(userID string) bool {
 	var user User
-	b := bson.M{"userId": userID}
-	err := DBGetOne("ircboks", "user", b, &user)
-	return (err == nil)
+	if err := DB.Where("user_id = ?", userID).First(&user).Error; err != nil {
+		return false
+	}
+	return true
 }
 
 //UserRegister handle user registration
@@ -137,23 +133,12 @@ func UserRegister(e *EndptMsg, ws *websocket.Conn) {
 		websocket.Message.Send(ws, `{"event":"registrationResult", "data" : {"result":"failed", "reason":"invalid password"}}`)
 		return
 	}
-	log.Debug("generated password = " + hashedPass)
 
-	uri := Config.GetString("mongodb_uri")
-
-	sess, err := mgo.Dial(uri)
-	if err != nil {
-		log.Error("Can't connect to mongo, go error :" + err.Error())
-		websocket.Message.Send(ws, `{"event":"registrationResult", "data" : {"result":"failed", "reason":"internal DB error"}}`)
-		return
+	user := User{
+		UserId:   userID,
+		Password: hashedPass,
 	}
-	defer sess.Close()
-
-	sess.SetSafe(&mgo.Safe{})
-	collection := sess.DB("ircboks").C("user")
-	doc := AuthInfo{bson.NewObjectId(), userID, hashedPass}
-	err = collection.Insert(doc)
-	if err != nil {
+	if err = DB.Save(&user).Error; err != nil {
 		log.Error("Can't insert new user:" + err.Error())
 		websocket.Message.Send(ws, `{"event":"registrationResult", "data" : {"result":"failed", "reason":"internal DB error"}}`)
 		return

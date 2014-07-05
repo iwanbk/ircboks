@@ -1,7 +1,9 @@
-code.google.com/p/go.crypto/bcrypt 40246d2ae2eb433547e5856182aa8242675b3bfb
-code.google.com/p/go.net/websocket    cdbc77c5e0064a55bdd9a6decd6e0d8f23c779ef
-github.com/gorilla/mux      270c42505a11c779b5a5aaecfa5ec717adac996e 
-github.com/iwanbk/ogric     98417aec90eafa28092333595e6d3683b76df4af 
-github.com/ngmoco/timber    dc5aca0b8c86e5c65256415d75d525670422e6e0
-github.com/stathat/jconfig  db15a6c67d44b86e9773b8cd030e2e2effd00293
-labix.org/v2/mgo            gustavo@niemeyer.net-20140126000127-qe9fwt48ceby11ts
+code.google.com/p/go.crypto/bcrypt      40246d2ae2eb433547e5856182aa8242675b3bfb
+code.google.com/p/go.net/websocket      cdbc77c5e0064a55bdd9a6decd6e0d8f23c779ef
+github.com/gorilla/mux                  270c42505a11c779b5a5aaecfa5ec717adac996e
+github.com/iwanbk/ogric                 98417aec90eafa28092333595e6d3683b76df4af
+github.com/ngmoco/timber                dc5aca0b8c86e5c65256415d75d525670422e6e0
+github.com/stathat/jconfig              db15a6c67d44b86e9773b8cd030e2e2effd00293
+labix.org/v2/mgo                        gustavo@niemeyer.net-20140126000127-qe9fwt48ceby11ts
+github.com/jinzhu/gorm
+github.com/mattn/go-sqlite3

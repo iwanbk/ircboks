@@ -2,3 +2,4 @@ server
 timber.xml
 config.json
 .godeps
+*.db

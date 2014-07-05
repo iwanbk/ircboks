@@ -2,22 +2,23 @@
 package main
 
 import (
+	"strconv"
+
 	"code.google.com/p/go.net/websocket"
 	log "github.com/ngmoco/timber"
-	"labix.org/v2/mgo/bson"
 )
 
 //MessageHist represent a message history
 type MessageHist struct {
-	ID        bson.ObjectId `bson:"_id" json:"Id"`
-	UserID    string        `bson:"userId" json:"UserId"`
-	Target    string        `bson:"target"`     //message target/receiver
-	Nick      string        `bson:"nick"`       //sender's nick
-	Message   string        `bson:"message"`    //message content
-	Timestamp int64         `bson:"timestamp"`  //server timestamp
-	ReadFlag  bool          `bson:"read_flag"`  //true if this message already read by user
-	ToChannel bool          `bson:"to_channel"` //true if it is message to channel
-	Incoming  bool          `bson:"incoming"`   //true if it is incoming message
+	Id        int64  `json:"Id"`
+	UserId    string `json:"UserId"`
+	Target    string //message target/receiver
+	Nick      string //sender's nick
+	Message   string //message content
+	Timestamp int64  //server timestamp
+	ReadFlag  bool   //true if this message already read by user
+	ToChannel bool   //true if it is message to channel
+	Incoming  bool   //true if it is incoming message
 }
 
 //MsgHistChannel get message history of a channel
@@ -35,13 +36,11 @@ func MsgHistChannel(em *EndptMsg, ws *websocket.Conn) {
 	for {
 		var res []MessageHist
 
-		query := bson.M{"userId": em.UserID, "target": channel}
-		err := DBQueryArr("ircboks", "msghist", query, "-timestamp", 50, 50*i, &res)
-		if err != nil {
+		db := DB.Offset(100 * i).Limit(100).Order("timestamp desc")
+		if err := db.Where("user_id=? and target=?", em.UserID, channel).Find(&res).Error; err != nil {
 			log.Error("[MsgHistChannel]fetching channel history:" + err.Error())
 			return
 		}
-
 		m := map[string]interface{}{
 			"logs":    res,
 			"channel": channel,
@@ -69,15 +68,13 @@ func MsgHistNick(em *EndptMsg, ws *websocket.Conn) {
 
 func msgHistNick(userID, nick string, ws *websocket.Conn) {
 	i := 0
-	query1 := bson.M{"userId": userID, "nick": nick, "to_channel": false} //message from this nick, not in channel
-	query2 := bson.M{"userId": userID, "target": nick}                    //message to this nick
-	query := bson.M{"$or": []bson.M{query1, query2}}
-
 	for {
 		var hists []MessageHist
 
-		err := DBQueryArr("ircboks", "msghist", query, "-timestamp", 50, 50*i, &hists)
-		if err != nil {
+		db := DB.Offset(100 * i).Limit(100).Order("timestamp desc")
+		db = db.Where("user_id=? and nick=? and to_channel=?", userID, nick, false)
+		db = db.Or("user_id=? and target=?", userID, nick)
+		if err := db.Find(&hists).Error; err != nil {
 			log.Error("[MsgHistNick]fetching channel nick:" + err.Error())
 			return
 		}
@@ -101,10 +98,20 @@ func msgHistNick(userID, nick string, ws *websocket.Conn) {
 func MsgHistNicksUnread(em *EndptMsg, ws *websocket.Conn) {
 	var unreadNicks []string
 
-	query := bson.M{"userId": em.UserID, "to_channel": false, "incoming": true, "read_flag": false}
-	if err := DBSelectDistinct("ircboks", "msghist", query, "nick", &unreadNicks); err != nil {
+	queryStr := "select distinct nick from message_hists" +
+		" where user_id=? and to_channel=? and read_flag=?"
+
+	rows, err := DB.Raw(queryStr, em.UserID, false, false).Rows()
+
+	if err != nil {
 		log.Error("MsgHistNicksUnread:selecr distinct err :" + err.Error())
 		return
+	}
+
+	for rows.Next() {
+		var nick string
+		rows.Scan(&nick)
+		unreadNicks = append(unreadNicks, nick)
 	}
 
 	m := map[string]interface{}{
@@ -112,6 +119,7 @@ func MsgHistNicksUnread(em *EndptMsg, ws *websocket.Conn) {
 	}
 
 	websocket.Message.Send(ws, jsonMarshal("msghistNicksUnread", m))
+
 }
 
 //MsgHistMarkRead mark messages readFlag as read
@@ -122,23 +130,36 @@ func MsgHistMarkRead(em *EndptMsg, ws *websocket.Conn) {
 		return
 	}
 	for _, oid := range oids {
-		updQuery := bson.M{"$set": bson.M{"read_flag": true}}
-
-		DBUpdateOne("ircboks", "msghist", oid, updQuery)
+		id, err := strconv.Atoi(oid)
+		if err != nil {
+			log.Error("invalid id:%s", err.Error())
+			continue
+		}
+		if err := DB.Table("message_hists").Where("id=?", id).Update("read_flag", true).Error; err != nil {
+			log.Error("update read_flag err = %s", err.Error())
+		}
 	}
 }
 
 //MsgHistInsert save a message to DB
-func MsgHistInsert(userID, target, nick, message string, timestamp int64, readFlag, incoming bool) bson.ObjectId {
-	objectID := bson.NewObjectId()
+func MsgHistInsert(userID, target, nick, message string, timestamp int64, readFlag, incoming bool) int64 {
 	toChannel := false
 	if string(target[0]) == "#" {
 		toChannel = true
 	}
-	doc := MessageHist{objectID, userID, target, nick, message, timestamp, readFlag, toChannel, incoming}
-	err := DBInsert("ircboks", "msghist", &doc)
-	if err != nil {
+
+	h := MessageHist{
+		UserId:    userID,
+		Target:    target,
+		Nick:      nick,
+		Message:   message,
+		Timestamp: timestamp,
+		ReadFlag:  readFlag,
+		ToChannel: toChannel,
+		Incoming:  incoming}
+
+	if err := DB.Save(&h).Error; err != nil {
 		log.Error("[insertMsgHistory] failed : " + err.Error())
 	}
-	return objectID
+	return h.Id
 }
